@@ -31,7 +31,7 @@ MAIN		:= requirements/ircserv.main.cpp
 HEADER		:= requirements/ircserv.head.hpp
 
 SRCS_DIR := requirements/srcs/
-SRCS_LST := 
+SRCS_LST := Server.cpp
 SRCS := ${addprefix ${SRCS_DIR}, ${SRCS_LST}}
 
 OBJS_DIR := requirements/objs/
@@ -40,15 +40,13 @@ OBJS := ${addprefix ${OBJS_DIR}, ${OBJS_LST}}
 
 # ---------------------------------- Rules ----------------------------------- #
 
-.PHONY: all clean fclean re title
-
 all: title ${NAME}
 
-${NAME}: ${OBJS_DIR} ${OBJS} ${HEADER}
+${NAME}: ${OBJS_DIR} ${OBJS} ${HEADER} ${MAIN} 
 	@${CC} ${CC_FLAGS} ${MAIN} ${OBJS} -o ${NAME}
 	@echo "${GRN}Compiled [${NAME}] Successfully!${NNN}"
 
-${OBJS_DIR}%.obj: ${SRCS_DIR}%.c ${HEADER}
+${OBJS_DIR}%.obj: ${SRCS_DIR}%.cpp ${HEADER}
 	@${CC} ${CC_FLAGS} -c $< -o $@
 	@echo "${BLU}Compiled $< Successfully!${NNN}"
 
@@ -64,6 +62,9 @@ fclean: clean
 
 re: fclean all
 
+.PHONY: all clean fclean re title
+
 title:
 	@clear
 	@echo "$$TITLE"
+# we need to fix main problem
