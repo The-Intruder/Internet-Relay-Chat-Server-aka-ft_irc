@@ -6,11 +6,13 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 13:04:15 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/01 18:01:20 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/01 18:21:09 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../ircserv.head.hpp"
+
+ #include "limits.h"
 
 
 
@@ -45,11 +47,12 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
         if(newsockfd < 0)
             throw std::runtime_error("accept failed"); 
         // step 5 : connection phase : send and receive | read and write
-        char buffer[256];
-        bzero(buffer, 256);
-        int valread = recv(newsockfd,  &buffer, sizeof(buffer), 0);
+        
+        char buffer[MAX_INPUT];
+        int valread = recv(newsockfd,  &buffer, MAX_INPUT, 0);
         if(valread < 0)
             throw std::runtime_error("recv failed"); 
+        buffer[valread] = '\0';
         std::cout << buffer << std::endl;
         int valwrite = send(newsockfd, "done.\n", 6, 0);
         if(valwrite < 0)
