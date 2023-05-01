@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 13:04:15 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/01 18:21:09 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/01 18:37:55 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
     if(bind(sockfd, (struct sockaddr *)&ServAddr, sizeof(ServAddr)) < 0)
         throw std::runtime_error("bind failed");
     // step 3 : wait for the incoming connection (listen)
-    if(listen(sockfd, 1) < 0)
+    if(listen(sockfd, SOMAXCONN) < 0)
         throw std::runtime_error("listen failed");
 
 
@@ -47,7 +47,6 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
         if(newsockfd < 0)
             throw std::runtime_error("accept failed"); 
         // step 5 : connection phase : send and receive | read and write
-        
         char buffer[MAX_INPUT];
         int valread = recv(newsockfd,  &buffer, MAX_INPUT, 0);
         if(valread < 0)
