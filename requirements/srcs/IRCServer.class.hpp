@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- */
-/*  File: ircserv.head.hpp                                                    */
+/*  File: iIRCServer.class.hpp                                                */
 /*  Brief: IRC server header file                                             */
 /*  Authors:                                                                  */
 /*   - Mohamed Amine Naimi                                                    */
@@ -10,16 +10,36 @@
 /* -------------------------------------------------------------------------- */
 
 #pragma once
-#ifndef IRCSERV_HEAD_HPP
-# define IRCSERV_HEAD_HPP
+#ifndef IRCSERVER_CLASS_HPP
 
 /* ---------------------------------- INCLUDES ------------------------------ */
 
-# include "srcs/IRCServer.class.hpp" // IRCServer class
+# include <sys/socket.h>
+# include <iostream>
+# include <string>
+# include <unistd.h>
+# include <fcntl.h>
+# include <netdb.h>
+# include <sys/types.h>
+# include <netinet/in.h>
+# include <arpa/inet.h>
+# include <csignal>
+# include <sys/stat.h>
+# include <poll.h>
 
-/* --------------------------------- PROTOTYPES ----------------------------- */
+/* ---------------------------------- CLASSES ------------------------------- */
+
+class IRCServer {
+    public:
+        std::string     server_pass;
+        size_t          server_port;
+    public:
+        IRCServer();
+        IRCServer(std::string server_pass, size_t server_port);
+        IRCServer(IRCServer const &src);
+        const IRCServer &operator=(IRCServer const &src);
+        ~IRCServer();
+};
 
 
-
-
-#endif // !IRCSERV_HEAD_HPP
+#endif // !IRCSERVER_CLASS_HPP

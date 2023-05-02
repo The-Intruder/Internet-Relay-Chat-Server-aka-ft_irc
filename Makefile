@@ -17,7 +17,8 @@ ${GRN}
      #+#             #+#                     #+#       #+#    #+#   #+#    #+#    
     ###             ###     ##########  ###########   ###    ###    ########      
 ${NNN}${GRA}
-                                - Created By : ${RED}Mohamed Amine /\\ Hssain /\\ Abdellah${NNN}\n
+                        - Created By : ${RED}Mohamed Amine ${BLU}/\\ \
+							${RED}Hssain ${BLU}/\\ ${RED}Abdellah${NNN}\n
 endef
 export TITLE
 
@@ -28,10 +29,11 @@ CC_FLAGS	:= -Wall -Wextra -Werror -std=c++98
 
 NAME		:= ircserv
 MAIN		:= requirements/ircserv.main.cpp
-HEADER		:= requirements/ircserv.head.hpp
+HEADERS		:= requirements/ircserv.head.hpp \
+			requirements/srcs/IRCServer.class.hpp
 
 SRCS_DIR := requirements/srcs/
-SRCS_LST := 
+SRCS_LST := IRCServer.class.cpp
 SRCS := ${addprefix ${SRCS_DIR}, ${SRCS_LST}}
 
 OBJS_DIR := requirements/objs/
@@ -44,11 +46,11 @@ OBJS := ${addprefix ${OBJS_DIR}, ${OBJS_LST}}
 
 all: title ${NAME}
 
-${NAME}: ${OBJS_DIR} ${OBJS} ${HEADER}
+${NAME}: ${OBJS_DIR} ${OBJS} ${HEADERS} ${MAIN}
 	@${CC} ${CC_FLAGS} ${MAIN} ${OBJS} -o ${NAME}
 	@echo "${GRN}Compiled [${GRA}${NAME}${GRN}] Successfully!${NNN}"
 
-${OBJS_DIR}%.o: ${SRCS_DIR}%.c ${HEADER}
+${OBJS_DIR}%.obj: ${SRCS_DIR}%.cpp ${HEADERS}
 	@${CC} ${CC_FLAGS} -c $< -o $@
 	@echo "${BLU}Compiled${GRA} $< ${BLU}Successfully!${NNN}"
 
