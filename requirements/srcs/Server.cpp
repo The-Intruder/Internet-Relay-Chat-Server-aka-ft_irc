@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 13:04:15 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/01 18:37:55 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/02 11:49:42 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,12 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if(sockfd < 0)
         throw std::runtime_error("cannot create socket");
+
+        // allow the socket descriptor to be reuseable
+        int on = 1;
+    int rc = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,  (char *)&on, sizeof(on));
+    if(rc < 0)
+        throw std::runtime_error("setsockopt failed");
    // before calling bind we need to fill the sockaddr_in
    memset((char *)&ServAddr, 0 , sizeof(ServAddr));
    ServAddr.sin_family = AF_INET;
@@ -58,6 +64,7 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
             throw std::runtime_error("send failed"); 
         close(newsockfd);
     }
+    close(sockfd);
     
 }
 
