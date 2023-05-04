@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:54:49 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/01 16:39:37 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/04 11:23:50 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,4 +26,6 @@ int main(int ac, char **av)
     {
         std::cout << e.what() << std::endl;
     }
+
+    // system("leaks ircserv"); // check for leaks
 }
