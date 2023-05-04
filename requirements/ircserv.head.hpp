@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/03 17:34:15 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/04 16:27:35 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,16 @@
 #include <sys/poll.h>
  #include <limits.h>
  #include <vector>
+ #include <map>
+
+class Client
+{
+    private:
+        // int PORT; // port of the client 
+        // std::string  IPADDRESS;// ip address of the client
+
+    public:
+};
 
 class Server
 {
@@ -30,12 +40,12 @@ class Server
         int PORT;
         std::string PASSWORD;
         struct sockaddr_in ServAddr;
+        std::map<int,Client>  Clients;
 
     public:
         Server(int PORT, std::string PASSTWORD);
         ~Server();
 };
-
 
 
 #endif
