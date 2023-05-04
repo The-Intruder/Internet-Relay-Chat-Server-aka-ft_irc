@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 13:04:15 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/04 17:45:49 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/04 18:33:05 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,10 +88,7 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
                      newsockfd = accept(sockfd, (struct sockaddr *)&ClientAddr, (socklen_t *)&addrlen);
                      if(newsockfd < 0)
                          throw std::runtime_error("accept failed");
-                    // std::cout << "new connection established from client IP:" << htonl(ClientAddr.sin_addr.s_addr) << std::endl;
-                    // std::cout << "new connection established from client IP:" << htons(ClientAddr.sin_addr.s_addr) << std::endl;
-                    // std::cout << "new connection established from client IP:" << ntohl(ClientAddr.sin_addr.s_addr) << std::endl;
-                    // std::cout << "new connection established from client IP:" << ntohs(ClientAddr.sin_addr.s_addr) << std::endl;
+                    std::cout << "new connection established from client IP:" << inet_ntoa(ClientAddr.sin_addr) << " sockfd:" << newsockfd<< std::endl;
                     // ********************************************     
                     // set the new connection to non blocking mode 
                     // ********************************************     
