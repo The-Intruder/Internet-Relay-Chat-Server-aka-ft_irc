@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:54:49 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/05 12:48:20 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/05 14:39:11 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,6 @@ static bool port_is_valid(const std::string &port)
             return false;
     return true;
 }
-
-// /* -------------------------------------------------------------------------- */
 
 static int check_for_errors(int ac, char **av)
 {
@@ -45,6 +43,7 @@ static int check_for_errors(int ac, char **av)
     }
     return EXIT_SUCCESS;
 }
+
 int main(int ac, char **av)
 {
     try{
@@ -69,12 +68,7 @@ int main(int ac, char **av)
 
 
 // TODO:
-// split server constractor into multi functions 
 // how to store clients ip adresses if the class and store each client data in the map
 // Authentification in server
 // bot 
 // look for if the parsing of the cmd
-
-
-
-
