@@ -1,14 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
+/*   Server.class.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/01 13:04:15 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/05 14:37:34 by abellakr         ###   ########.fr       */
+/*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
+/*   Updated: 2023/05/05 19:02:06 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+
 
 #include "../ircserv.head.hpp"
 
@@ -28,7 +30,6 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
                 HandleConnections(i);
         }
     } 
-    close(newsockfd);
     close(servsockfd);
 }
 
@@ -63,7 +64,7 @@ void Server::AcceptConnections()
 {
     struct sockaddr_in ClientAddr;
     int addrlen = sizeof(ClientAddr);
-    newsockfd = accept(servsockfd, (struct sockaddr *)&ClientAddr, (socklen_t *)&addrlen);
+    int newsockfd = accept(servsockfd, (struct sockaddr *)&ClientAddr, (socklen_t *)&addrlen);
     if(newsockfd < 0)
         throw std::runtime_error("accept failed");
     int fl = fcntl(newsockfd, F_SETFL, O_NONBLOCK);
@@ -73,14 +74,14 @@ void Server::AcceptConnections()
     tmpfd.fd = newsockfd;
     tmpfd.events = POLLIN | POLLOUT;
     pfds.push_back(tmpfd);
-    std::cout << "new connection established from client IP:" << inet_ntoa(ClientAddr.sin_addr) << " sockfd:" << newsockfd<< std::endl;
+    // SaveClients(newsockfd, ClientAddr.sin_addr.s_addr);
+    // std::cout << "new connection established from client IP:" << inet_ntoa(ClientAddr.sin_addr) << " sockfd:" << newsockfd<< std::endl;
 }
 
 void Server::HandleConnections(size_t i)
 {
     char buffer[MAX_INPUT + 1] = {0};
     int valread = read(pfds[i].fd, buffer, sizeof(buffer));
-    //  std::cout << valread << std::endl;
     if(valread < 0)
             throw std::runtime_error("read failed");
     else if(valread > 0)
@@ -98,7 +99,20 @@ void Server::HandleConnections(size_t i)
     }
 }
 
+void SaveClients(int newsockfd, unsigned int IP)
+{
+    Client new_client(newsockfd, IP);
+    // std::cout << new_client.abdellah << std::endl;
+//     std::pair<int,Client> Mypair; // pair to be inserted into the map of clients
+
+//     Mypair.first = newsockfd;
+//     Mypair.second = new_client;
+//     ClientsMap.insert(Mypair); 
+}
+
 Server::~Server()
 {
     
 }
+
+

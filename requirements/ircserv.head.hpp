@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/05 14:52:19 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/05 19:01:31 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,17 @@
 class Client
 {
     private:
-        
-
+        __uint32_t IP; // IP adress of the client
+        std::string NICKNAME;
+        bool VP; // is the password validated
+        bool VN; // is nickname validated
+        bool VM; // is message validated
+        bool authenticated; // is the user authenticated
+        int sockfd;
     public:
+        Client(int newsockfd, unsigned int IP);
+        ~Client();
+        // std::string abdellah; // for debugging
 };
 
 class Server
@@ -42,16 +50,14 @@ class Server
         int servsockfd; // socket file descriptor of the server
         struct sockaddr_in ServAddr; // socket address of the server
         std::vector<pollfd> pfds; // file descriptors to keep eyes on 
-        std::map<int,Client>  Clients; // clients map
-
-
-        int newsockfd; // check it later
+        // std::map<int,Client>  ClientsMap; // clients map
 
     public:
         Server(int PORT, std::string PASSTWORD);
         ~Server();
         void SetupServer(void);
         void AcceptConnections();
-        void HandleConnections(size_t i);
+        void HandleConnections(size_t i); // Handle connections
+        void SaveClients(int newsockfd, unsigned int IP); // save the connected client to the map of clients
 };
 #endif

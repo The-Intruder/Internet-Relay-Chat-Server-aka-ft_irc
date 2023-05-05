@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:54:49 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/05 14:39:11 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/05 15:23:24 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ int main(int ac, char **av)
             std::cout << "Usage: " << av[0] << " <port> <password>" << std::endl;
             return EXIT_SUCCESS;
         }
-    else if (check_for_errors(ac, av) == EXIT_FAILURE)
+        else if (check_for_errors(ac, av) == EXIT_FAILURE)
             throw std::invalid_argument("error: invalid argument");
         else
             Server ircserv(std::atoi(av[1]), av[2]);
