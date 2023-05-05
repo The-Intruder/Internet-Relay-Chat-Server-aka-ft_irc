@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 13:04:15 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/04 18:33:05 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/05 13:12:52 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,56 +15,9 @@
 // constractor parametrized of my simple server
 Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
 {
-    // ******************************************
-   // creat socket
-  // ********************************************
-  
-   int newsockfd = 0 ;
-   int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-   if(sockfd < 0)
-       throw std::runtime_error("cannot create socket");
-    // ********************************************
-    // allow the socket descriptor to be reuseable
-    // ********************************************
-    int on = 1;
-    int rc = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,  (char *)&on, sizeof(on));
-    if(rc < 0)
-        throw std::runtime_error("setsockopt failed");
-    // ********************************************
-    //  set the socket to be non blocking
-    // ********************************************
-    int fl = fcntl(sockfd, F_SETFL, O_NONBLOCK);
-    if(fl < 0)
-        throw std::runtime_error("fcntl failed");
-    // ********************************************
-    // before calling bind we need to fill the sockaddr_in
-    // ********************************************
-   memset((char *)&ServAddr, 0 , sizeof(ServAddr));
-   ServAddr.sin_family = AF_INET;
-   ServAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-   ServAddr.sin_port = htons(this->PORT);
-    // ********************************************
-    // associate a socket with a specific network address and port number
-    // ********************************************
-    if(bind(sockfd, (struct sockaddr *)&ServAddr, sizeof(ServAddr)) < 0)
-        throw std::runtime_error("bind failed");
-  
-    // ********************************************
-    // wait for the incoming connection (listen)
-    // ********************************************
-    if(listen(sockfd, SOMAXCONN) < 0)
-        throw std::runtime_error("listen failed");    
-    // ********************************************
-    // initialize the pollfd structure
-    // ********************************************
-    std::vector<pollfd> pfds;
-
-    struct pollfd tmpfd;
-    tmpfd.fd = sockfd;
-    tmpfd.events = POLLIN;
-    pfds.push_back(tmpfd);
- 
-    std::cout << "----waiting for the connection in port : " << this->PORT << "----"<< std::endl;
+    // setup the server
+    SetupServer();
+    int newsockfd = 0;
     while(true)
     {
         // ********************************************
@@ -85,14 +38,14 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
                      // ********************************************
                      // accept the incoming connection 
                      // ********************************************
-                     newsockfd = accept(sockfd, (struct sockaddr *)&ClientAddr, (socklen_t *)&addrlen);
+                     newsockfd = accept(servsockfd, (struct sockaddr *)&ClientAddr, (socklen_t *)&addrlen);
                      if(newsockfd < 0)
                          throw std::runtime_error("accept failed");
                     std::cout << "new connection established from client IP:" << inet_ntoa(ClientAddr.sin_addr) << " sockfd:" << newsockfd<< std::endl;
                     // ********************************************     
                     // set the new connection to non blocking mode 
                     // ********************************************     
-                     fl = fcntl(newsockfd, F_SETFL, O_NONBLOCK);
+                     int fl = fcntl(newsockfd, F_SETFL, O_NONBLOCK);
                      if(fl < 0)
                          throw std::runtime_error("fcntl failed");
                      // ********************************************
@@ -132,11 +85,67 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
            }
     } 
     close(newsockfd);
-    close(sockfd); 
+    close(servsockfd); 
     
 }
 
 Server::~Server()
 {
     
+}
+
+// TODO: code split
+// setup server : done
+// wait for the connection : while(true)
+// accept the connection
+// handle the connection
+
+
+
+void    Server::SetupServer()
+{
+    // ******************************************
+   // create socket
+  // ********************************************
+   servsockfd = socket(AF_INET, SOCK_STREAM, 0);
+   if(servsockfd < 0)
+       throw std::runtime_error("cannot create socket");
+    // ********************************************
+    // allow the socket descriptor to be reuseable
+    // ********************************************
+    int on = 1;
+    int rc = setsockopt(servsockfd, SOL_SOCKET, SO_REUSEADDR,  (char *)&on, sizeof(on));
+    if(rc < 0)
+        throw std::runtime_error("setsockopt failed");
+    // ********************************************
+    //  set the socket to be non blocking
+    // ********************************************
+    int fl = fcntl(servsockfd, F_SETFL, O_NONBLOCK);
+    if(fl < 0)
+        throw std::runtime_error("fcntl failed");
+    // ********************************************
+    // before calling bind we need to fill the sockaddr_in
+    // ********************************************
+   memset((char *)&ServAddr, 0 , sizeof(ServAddr));
+   ServAddr.sin_family = AF_INET;
+   ServAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+   ServAddr.sin_port = htons(this->PORT);
+    // ********************************************
+    // associate a socket with a specific network address and port number
+    // ********************************************
+    if(bind(servsockfd, (struct sockaddr *)&ServAddr, sizeof(ServAddr)) < 0)
+        throw std::runtime_error("bind failed");
+    // ********************************************
+    // wait for the incoming connection (listen)
+    // ********************************************
+    if(listen(servsockfd, SOMAXCONN) < 0)
+        throw std::runtime_error("listen failed");    
+    // ********************************************
+    // initialize the pollfd structure
+    // ********************************************
+    struct pollfd tmpfd;
+    tmpfd.fd = servsockfd;
+    tmpfd.events = POLLIN;
+    pfds.push_back(tmpfd);
+    std::cout << "----waiting for the connection in port : " << this->PORT << "----"<< std::endl;  
 }

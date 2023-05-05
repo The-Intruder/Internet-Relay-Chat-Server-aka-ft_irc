@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/04 18:41:48 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/05 13:09:07 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,15 +37,16 @@ class Client
 class Server
 {
     private:
-        int PORT;
-        std::string PASSWORD;
-        struct sockaddr_in ServAddr;
-        std::map<int,Client>  Clients;
+        int PORT; // argument port
+        std::string PASSWORD; // password of the server
+        int servsockfd; // socket file descriptor of the server
+        struct sockaddr_in ServAddr; // socket address of the server
+        std::vector<pollfd> pfds; // file descriptors to keep eyes on 
+        std::map<int,Client>  Clients; // clients map
 
     public:
         Server(int PORT, std::string PASSTWORD);
         ~Server();
+        void SetupServer(void);
 };
-
-
 #endif

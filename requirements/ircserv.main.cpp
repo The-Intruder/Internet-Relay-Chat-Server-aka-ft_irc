@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:54:49 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/04 19:59:08 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/05 12:48:20 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,3 +74,7 @@ int main(int ac, char **av)
 // Authentification in server
 // bot 
 // look for if the parsing of the cmd
+
+
+
+
