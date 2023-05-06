@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/05 19:02:06 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/06 19:56:46 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
             else if(pfds[i].revents & POLLIN)
                 HandleConnections(i);
         }
-    } 
+    }
     close(servsockfd);
 }
 
@@ -74,45 +74,68 @@ void Server::AcceptConnections()
     tmpfd.fd = newsockfd;
     tmpfd.events = POLLIN | POLLOUT;
     pfds.push_back(tmpfd);
-    // SaveClients(newsockfd, ClientAddr.sin_addr.s_addr);
-    // std::cout << "new connection established from client IP:" << inet_ntoa(ClientAddr.sin_addr) << " sockfd:" << newsockfd<< std::endl;
+    SaveClients(newsockfd, ClientAddr.sin_addr.s_addr);
 }
 
-void Server::HandleConnections(size_t i)
+void Server::HandleConnections(size_t pfdsindex)
 {
     char buffer[MAX_INPUT + 1] = {0};
-    int valread = read(pfds[i].fd, buffer, sizeof(buffer));
+    int valread = read(pfds[pfdsindex].fd, buffer, sizeof(buffer));
     if(valread < 0)
             throw std::runtime_error("read failed");
     else if(valread > 0)
     {
-        // std::cout << buffer << std::endl;
-        for(size_t j = 1; j < pfds.size(); j++)
+        // std::cout << buffer << std::endl; // print buffer in server side
+        std::string data = buffer; //
+        size_t fi = data.find(" ", 0);
+        if(fi == std::string::npos)
+            throw  std::runtime_error("arg error"); // to be checked later
+        MS.push_back(data.substr(0 , fi));
+        MS.push_back(data.substr(fi + 1, data.length() - fi - 2));
+        if(Authentication(pfdsindex) == true)
         {
-            if((pfds[j].revents & POLLOUT) && j != i)
+            // the client is authenticated to the server
+            // -------------------------------------------------- broadcast
+            for(size_t j = 1; j < pfds.size(); j++)
             {
-                int valwrite = write(pfds[j].fd, buffer, sizeof(buffer));
-                if(valwrite < 0)
-                    throw std::runtime_error("write failed");
-            }                          
+                if((pfds[j].revents & POLLOUT) && j != pfdsindex)
+                {
+                    int valwrite = write(pfds[j].fd, buffer, sizeof(buffer));
+                    if(valwrite < 0)
+                        throw std::runtime_error("write failed");
+                }                          
+            }
+            // ---------------------------------------------------------- broadcast
         }
     }
 }
 
-void SaveClients(int newsockfd, unsigned int IP)
+void Server::SaveClients(int newsockfd, unsigned int IP)
 {
     Client new_client(newsockfd, IP);
-    // std::cout << new_client.abdellah << std::endl;
-//     std::pair<int,Client> Mypair; // pair to be inserted into the map of clients
+    std::pair<int,Client> Mypair = std::make_pair(newsockfd, new_client);
+    ClientsMap.insert(Mypair); 
+}
 
-//     Mypair.first = newsockfd;
-//     Mypair.second = new_client;
-//     ClientsMap.insert(Mypair); 
+
+bool Server::Authentication(size_t pfdsindex)
+{
+    // std::cout << "Authentication" << std::endl;
+    std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
+    Client& tmp = it->second;
+    if(MS[0] == "PASS" && tmp.getVP() == false)
+    {
+        std::cout << "PASS VALID" << std::endl;
+        tmp.setVP(true);
+    }
+    else if (MS[0] == "PASS" && tmp.getVP() == true)
+    {
+        std::cout << "PASS IS ALREADY PASSED" << std::endl;
+    }
+    return false;
 }
 
 Server::~Server()
 {
     
 }
-
-

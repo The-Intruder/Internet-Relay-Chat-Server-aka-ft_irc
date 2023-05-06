@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:54:49 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/05 15:23:24 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/06 15:57:42 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,6 @@ int main(int ac, char **av)
 
 
 // TODO:
-// how to store clients ip adresses if the class and store each client data in the map
-// Authentification in server
-// bot 
 // look for if the parsing of the cmd
+// Authentification in server
+// bot  : curl parrot.live

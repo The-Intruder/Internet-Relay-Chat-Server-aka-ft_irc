@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/05 19:01:31 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/06 19:51:42 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
  #include <vector>
  #include <map>
  #include <arpa/inet.h>
+ #include <utility>
 
 class Client
 {
@@ -34,12 +35,24 @@ class Client
         bool VP; // is the password validated
         bool VN; // is nickname validated
         bool VM; // is message validated
-        bool authenticated; // is the user authenticated
+        bool Authenticated; // is the user authenticated
         int sockfd;
     public:
         Client(int newsockfd, unsigned int IP);
         ~Client();
-        // std::string abdellah; // for debugging
+        __uint32_t getIP();
+        std::string getNICKNAME();
+        bool getVP();
+        bool getVN();
+        bool getVM();
+        bool getAuthenticated();
+        int getSockfd();
+
+        void setVP(bool v);
+        void setVN(bool v);
+        void setVM(bool v);
+        void setAuthenticated(bool v);
+        void setSockfd(int v);
 };
 
 class Server
@@ -50,8 +63,9 @@ class Server
         int servsockfd; // socket file descriptor of the server
         struct sockaddr_in ServAddr; // socket address of the server
         std::vector<pollfd> pfds; // file descriptors to keep eyes on 
-        // std::map<int,Client>  ClientsMap; // clients map
-
+        std::map<int,Client>  ClientsMap; // clients map
+        std::vector<std::string> MS; // mesaage splited by space
+ 
     public:
         Server(int PORT, std::string PASSTWORD);
         ~Server();
@@ -59,5 +73,6 @@ class Server
         void AcceptConnections();
         void HandleConnections(size_t i); // Handle connections
         void SaveClients(int newsockfd, unsigned int IP); // save the connected client to the map of clients
+        bool Authentication(size_t pfdsindex);
 };
 #endif
