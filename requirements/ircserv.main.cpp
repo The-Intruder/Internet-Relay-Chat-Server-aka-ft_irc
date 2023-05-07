@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:54:49 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/06 20:46:40 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/07 14:23:54 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,5 +69,16 @@ int main(int ac, char **av)
 
 // TODO:
 // look for if the parsing of the cmd
-// Authentification in server
+// add list for commands to parse data
 // bot  : curl parrot.live system("cal");
+// check ftp 
+//check limechat
+
+//TODO:
+// Authentification in server : PASS , NICK , USER
+// add function to handle errors as RFC
+
+
+//TODO:: drari
+// list of commands to be executed form other contributors
+// synchronized the error handling function for other contributors

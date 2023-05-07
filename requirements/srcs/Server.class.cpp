@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/07 01:18:20 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/07 14:55:39 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,9 @@ void Server::HandleConnections(size_t pfdsindex)
         std::string data = buffer; //
         size_t fi = data.find(" ", 0);
         if(fi == std::string::npos)
-            writemessagetoclients(pfdsindex, "461 * ERR_NEEDMOREPARAMS\n", sizeof("461 * ERR_NEEDMOREPARAMS\n"));
+        {
+            writemessagetoclients(pfdsindex, "461 * ERR_NEEDMOREPARAMS\n", sizeof("461 * ERR_NEEDMOREPARAMS\n")); // error
+        }
         MS.clear();
         MS.push_back(data.substr(0 , fi));
         MS.push_back(data.substr(fi + 1, data.length() - fi - 2));
@@ -118,27 +120,34 @@ bool Server::Authentication(size_t pfdsindex)
     std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
     Client& tmp = it->second;
     if((MS[0] == "PASS" || MS[0] == "pass" ) && tmp.getVP() == false)
+    {
         if((pfds[pfdsindex].revents & POLLOUT) && MS[1] == PASSWORD)
         {
-            writemessagetoclients(pfdsindex, "pass valid", 10);
+            writemessagetoclients(pfdsindex, "pass valid\n", 11);
             tmp.setVP(true);
         }  
-    else if ((MS[0] == "PASS" || MS[0] == "pass" ) && tmp.getVP() == true)
-            writemessagetoclients(pfdsindex, "462 * ERR_ALREADYREGISTRED", sizeof("462 * ERR_ALREADYREGISTRED"));
+    }
+    else if((MS[0] == "PASS" || MS[0] == "pass" ) && tmp.getVP() == true)
+        writemessagetoclients(pfdsindex, "462 * ERR_ALREADYREGISTRED", sizeof("462 * ERR_ALREADYREGISTRED")); // error 
     return false;
 }
 
-Server::~Server()
-{
-    
-}
-
-
-// write function to send message to the client
-
+// function to send message to the client
 void Server::writemessagetoclients(size_t pfdsindex, std::string message, int messagelen)
 {
     int valwrite = write(pfds[pfdsindex].fd, message.c_str() ,messagelen);
     if(valwrite < 0)
         throw std::runtime_error("write failed");
 }
+
+// send a  special error to the client
+// void Server::ErrorReplies(int flag, size_t pfdsindex)
+// {
+          
+// }
+
+Server::~Server()
+{
+    
+}
+

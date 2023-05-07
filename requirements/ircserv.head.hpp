@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/07 00:56:41 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/07 14:52:22 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,12 @@
  #include <map>
  #include <arpa/inet.h>
  #include <utility>
+ #include <string>
+
+
+// error replies macros
+#define ERR_NEEDMOREPARAMS 461
+#define ERR_ALREADYREGISTRED 462
 
 class Client
 {
@@ -74,6 +80,8 @@ class Server
         void HandleConnections(size_t i); // Handle connections
         void SaveClients(int newsockfd, unsigned int IP); // save the connected client to the map of clients
         bool Authentication(size_t pfdsindex);
-        void writemessagetoclients(size_t pfdsindex, std::string message, int messagelen);
+        void writemessagetoclients(size_t pfdsindex, std::string message, int messagelen); // pfdsindex is the fd socket of the client to send data to
+        void ErrorReplies(int flag, size_t pfdsindex);
 };
 #endif
+
