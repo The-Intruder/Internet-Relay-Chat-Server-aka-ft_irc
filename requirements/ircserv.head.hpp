@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/06 19:51:42 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/07 00:56:41 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,5 +74,6 @@ class Server
         void HandleConnections(size_t i); // Handle connections
         void SaveClients(int newsockfd, unsigned int IP); // save the connected client to the map of clients
         bool Authentication(size_t pfdsindex);
+        void writemessagetoclients(size_t pfdsindex, std::string message, int messagelen);
 };
 #endif

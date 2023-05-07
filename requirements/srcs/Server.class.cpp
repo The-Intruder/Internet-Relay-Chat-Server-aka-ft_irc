@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/06 19:56:46 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/07 01:18:20 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ void    Server::SetupServer()
     tmpfd.fd = servsockfd;
     tmpfd.events = POLLIN;
     pfds.push_back(tmpfd);
-    std::cout << "waiting for connections port : " << this->PORT << std::endl;  
+    std::cout << "waiting for connections port : " << this->PORT << " | PASS : " << PASSWORD << std::endl;  
 }
 
 void Server::AcceptConnections()
@@ -89,7 +89,8 @@ void Server::HandleConnections(size_t pfdsindex)
         std::string data = buffer; //
         size_t fi = data.find(" ", 0);
         if(fi == std::string::npos)
-            throw  std::runtime_error("arg error"); // to be checked later
+            writemessagetoclients(pfdsindex, "461 * ERR_NEEDMOREPARAMS\n", sizeof("461 * ERR_NEEDMOREPARAMS\n"));
+        MS.clear();
         MS.push_back(data.substr(0 , fi));
         MS.push_back(data.substr(fi + 1, data.length() - fi - 2));
         if(Authentication(pfdsindex) == true)
@@ -97,14 +98,8 @@ void Server::HandleConnections(size_t pfdsindex)
             // the client is authenticated to the server
             // -------------------------------------------------- broadcast
             for(size_t j = 1; j < pfds.size(); j++)
-            {
                 if((pfds[j].revents & POLLOUT) && j != pfdsindex)
-                {
-                    int valwrite = write(pfds[j].fd, buffer, sizeof(buffer));
-                    if(valwrite < 0)
-                        throw std::runtime_error("write failed");
-                }                          
-            }
+                    writemessagetoclients(j, buffer, sizeof(buffer));
             // ---------------------------------------------------------- broadcast
         }
     }
@@ -120,22 +115,30 @@ void Server::SaveClients(int newsockfd, unsigned int IP)
 
 bool Server::Authentication(size_t pfdsindex)
 {
-    // std::cout << "Authentication" << std::endl;
     std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
     Client& tmp = it->second;
-    if(MS[0] == "PASS" && tmp.getVP() == false)
-    {
-        std::cout << "PASS VALID" << std::endl;
-        tmp.setVP(true);
-    }
-    else if (MS[0] == "PASS" && tmp.getVP() == true)
-    {
-        std::cout << "PASS IS ALREADY PASSED" << std::endl;
-    }
+    if((MS[0] == "PASS" || MS[0] == "pass" ) && tmp.getVP() == false)
+        if((pfds[pfdsindex].revents & POLLOUT) && MS[1] == PASSWORD)
+        {
+            writemessagetoclients(pfdsindex, "pass valid", 10);
+            tmp.setVP(true);
+        }  
+    else if ((MS[0] == "PASS" || MS[0] == "pass" ) && tmp.getVP() == true)
+            writemessagetoclients(pfdsindex, "462 * ERR_ALREADYREGISTRED", sizeof("462 * ERR_ALREADYREGISTRED"));
     return false;
 }
 
 Server::~Server()
 {
     
+}
+
+
+// write function to send message to the client
+
+void Server::writemessagetoclients(size_t pfdsindex, std::string message, int messagelen)
+{
+    int valwrite = write(pfds[pfdsindex].fd, message.c_str() ,messagelen);
+    if(valwrite < 0)
+        throw std::runtime_error("write failed");
 }
