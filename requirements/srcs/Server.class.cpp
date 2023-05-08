@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/07 14:55:39 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/08 21:04:25 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,14 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
             if(pfds[i].revents & POLLIN && i == 0)
                 AcceptConnections();
             else if(pfds[i].revents & POLLIN)
+            {
+                std::map<int,Client>::iterator it = ClientsMap.find(pfds[i].fd);
+                Client& tmp = it->second;
                 HandleConnections(i);
+                if(tmp.getAuthenticated() == true)
+                    tmp.setfirstATH(true);
+                
+            }
         }
     }
     close(servsockfd);
@@ -79,30 +86,32 @@ void Server::AcceptConnections()
 
 void Server::HandleConnections(size_t pfdsindex)
 {
+    std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
+    Client& tmp = it->second;
     char buffer[MAX_INPUT + 1] = {0};
     int valread = read(pfds[pfdsindex].fd, buffer, sizeof(buffer));
     if(valread < 0)
             throw std::runtime_error("read failed");
     else if(valread > 0)
     {
-        // std::cout << buffer << std::endl; // print buffer in server side
-        std::string data = buffer; //
-        size_t fi = data.find(" ", 0);
-        if(fi == std::string::npos)
-        {
-            writemessagetoclients(pfdsindex, "461 * ERR_NEEDMOREPARAMS\n", sizeof("461 * ERR_NEEDMOREPARAMS\n")); // error
-        }
         MS.clear();
-        MS.push_back(data.substr(0 , fi));
-        MS.push_back(data.substr(fi + 1, data.length() - fi - 2));
+        std::string data = buffer; 
+        data.pop_back();
+        // std::cout << "'" << data << "' " << data.length() << std::endl; 
+        MS.push_back(data.substr(0, data.find_first_of(" ")));
+        if(data.find(" ") != std::string::npos)
+            MS.push_back(data.substr(data.find_first_of(" ") + 1));
         if(Authentication(pfdsindex) == true)
         {
             // the client is authenticated to the server
-            // -------------------------------------------------- broadcast
+            // here I will parse the commads
+            //------------------------------------------------ broadcast
             for(size_t j = 1; j < pfds.size(); j++)
-                if((pfds[j].revents & POLLOUT) && j != pfdsindex)
-                    writemessagetoclients(j, buffer, sizeof(buffer));
-            // ---------------------------------------------------------- broadcast
+            {
+                if((pfds[j].revents & POLLOUT) && (j != pfdsindex) && tmp.getfirstATH() == true)
+                    writemessagetoclients(j, data);
+            }
+            //--------------------------------------------------- broadcast
         }
     }
 }
@@ -119,35 +128,108 @@ bool Server::Authentication(size_t pfdsindex)
 {
     std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
     Client& tmp = it->second;
-    if((MS[0] == "PASS" || MS[0] == "pass" ) && tmp.getVP() == false)
+    splitargs();
+    // check pass
+    checkpass(pfdsindex, tmp);
+    // check nick
+    checknick(pfdsindex, tmp);
+    //check user
+    checkuser(pfdsindex, tmp);
+    if(tmp.getVP() == true &&  tmp.getVU() == true && tmp.getVN() == true)
     {
-        if((pfds[pfdsindex].revents & POLLOUT) && MS[1] == PASSWORD)
-        {
-            writemessagetoclients(pfdsindex, "pass valid\n", 11);
-            tmp.setVP(true);
-        }  
+        if(tmp.getAuthenticated() == false)
+        {            
+            std::string tmp = "successfully authenticated\n";
+            writemessagetoclients(pfdsindex, tmp);
+        }
+        tmp.setAuthenticated(true);
+        return true;
     }
-    else if((MS[0] == "PASS" || MS[0] == "pass" ) && tmp.getVP() == true)
-        writemessagetoclients(pfdsindex, "462 * ERR_ALREADYREGISTRED", sizeof("462 * ERR_ALREADYREGISTRED")); // error 
     return false;
 }
 
-// function to send message to the client
-void Server::writemessagetoclients(size_t pfdsindex, std::string message, int messagelen)
+
+
+///////////////////////////////////////////////////////////////////////////////////
+void    Server::checkpass(size_t pfdsindex, Client& client)
 {
-    int valwrite = write(pfds[pfdsindex].fd, message.c_str() ,messagelen);
+    if((MS[0] == "PASS" || MS[0] == "pass") && client.getVP() == false)
+    {
+        if(MS.size() < 2)
+        {
+            ERR_NEEDMOREPARAMS(pfdsindex,MS[0]);
+        }
+        else if(MS[1] == PASSWORD)
+            client.setVP(true);
+    }
+    else if((MS[0] == "PASS" || MS[0] == "pass" ) && client.getVP() == true && (pfds[pfdsindex].revents & POLLOUT))
+    {
+        ERR_ALREADYREGISTRED(pfdsindex);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////
+void Server::checknick(size_t pfdsindex, Client& client)
+{
+    if(MS.size() < 2)
+    {
+        ERR_NONICKNAMEGIVEN(pfdsindex);
+    }
+    else if((MS[0] == "NICK" || MS[0] == "nick") && client.getVN() == false && client.getVP() == true)
+    {
+        client.setNICKNAME(MS[1]);
+        client.setVN(true);
+    }
+    else if((MS[0] == "NICK" || MS[0] == "nick") && client.getVN() == true && client.getVP() == true)
+    {
+        client.setNICKNAME(MS[1]);
+        client.setVN(true);
+        std::string tmp = "WiZ changed his nickname to " + MS[1] + "\n";
+         writemessagetoclients(pfdsindex, tmp);
+    }
+}
+//////////////////////////////////////////////////////////////////////
+void Server::checkuser(size_t pfdsindex, Client& client)
+{
+    if((MS[0] == "USER" || MS[0] == "user") && client.getVU() == false && client.getVP() == true && client.getVN() == true)
+    {
+        client.setUSERNAME(MS[1]);   
+        client.setREALNAME(MS[2]);
+        std::string tmp = "USER !!";
+         writemessagetoclients(pfdsindex, tmp);
+        client.setVU(true);   
+    }
+    // else if((MS[0] == "USER" || MS[0] == "user") && client.getVU() == true && client.getVP() == true && client.getVN() == true)
+    // {
+        
+    // }
+}
+///////////////////////////////////////////////////////////////////////////
+
+
+// function to send message to the client
+void Server::writemessagetoclients(size_t pfdsindex, std::string message)
+{
+    int valwrite = write(pfds[pfdsindex].fd, message.c_str() ,message.length());
     if(valwrite < 0)
         throw std::runtime_error("write failed");
 }
 
-// send a  special error to the client
-// void Server::ErrorReplies(int flag, size_t pfdsindex)
-// {
-          
-// }
 
 Server::~Server()
 {
     
 }
 
+void Server::splitargs()
+{
+    if(MS.size() > 1)
+    {
+        std::string tmp = MS[1];
+        MS.pop_back();
+        std::istringstream iss(tmp);
+        std::string substring;
+        while (iss >> substring)
+            MS.push_back(substring);
+    }
+}

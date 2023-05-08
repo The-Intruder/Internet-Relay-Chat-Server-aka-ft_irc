@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/07 14:52:22 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/08 15:22:38 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,38 +27,47 @@
  #include <arpa/inet.h>
  #include <utility>
  #include <string>
+ #include <sstream>
+ #include "srcs/errors.macros.hpp"
 
 
-// error replies macros
-#define ERR_NEEDMOREPARAMS 461
-#define ERR_ALREADYREGISTRED 462
 
 class Client
 {
     private:
         __uint32_t IP; // IP adress of the client
         std::string NICKNAME;
+        std::string USERNAME;
+        std::string REALNAME;
         bool VP; // is the password validated
         bool VN; // is nickname validated
-        bool VM; // is message validated
+        bool VU; // is USER validated
         bool Authenticated; // is the user authenticated
         int sockfd;
+        bool firstATH;
     public:
         Client(int newsockfd, unsigned int IP);
         ~Client();
         __uint32_t getIP();
-        std::string getNICKNAME();
-        bool getVP();
-        bool getVN();
-        bool getVM();
-        bool getAuthenticated();
-        int getSockfd();
+        bool getVP() const;
+        bool getVN() const;
+        bool getVU() const;
+        bool getAuthenticated() const;
+        int getSockfd() const;
+        std::string getNICKNAME() const;
+        std::string getUSERNAME() const;
+        std::string getREALNAME() const;
+        bool getfirstATH() const;
 
         void setVP(bool v);
         void setVN(bool v);
-        void setVM(bool v);
+        void setVU(bool v);
         void setAuthenticated(bool v);
         void setSockfd(int v);
+        void setNICKNAME(std::string NICK);
+        void setUSERNAME(std::string USERNAME);
+        void setREALNAME(std::string REALNAME);
+        void setfirstATH(bool v);
 };
 
 class Server
@@ -79,9 +88,13 @@ class Server
         void AcceptConnections();
         void HandleConnections(size_t i); // Handle connections
         void SaveClients(int newsockfd, unsigned int IP); // save the connected client to the map of clients
+
         bool Authentication(size_t pfdsindex);
-        void writemessagetoclients(size_t pfdsindex, std::string message, int messagelen); // pfdsindex is the fd socket of the client to send data to
-        void ErrorReplies(int flag, size_t pfdsindex);
+        void checkpass(size_t pfdsindex, Client& client); 
+        void checknick(size_t pfdsindex, Client& client); 
+        void checkuser(size_t pfdsindex, Client& client); 
+        
+        void writemessagetoclients(size_t pfdsindex, std::string message); // pfdsindex is the fd socket of the client to send data to *
+        void splitargs();
 };
 #endif
-
