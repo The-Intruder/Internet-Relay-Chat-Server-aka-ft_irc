@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/08 15:22:38 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/08 21:44:12 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ class Client
         bool VN; // is nickname validated
         bool VU; // is USER validated
         bool Authenticated; // is the user authenticated
-        int sockfd;
+        int sockfd; 
         bool firstATH;
     public:
         Client(int newsockfd, unsigned int IP);
@@ -80,6 +80,7 @@ class Server
         std::vector<pollfd> pfds; // file descriptors to keep eyes on 
         std::map<int,Client>  ClientsMap; // clients map
         std::vector<std::string> MS; // mesaage splited by space
+        std::vector<std::string> NickNames;
  
     public:
         Server(int PORT, std::string PASSTWORD);

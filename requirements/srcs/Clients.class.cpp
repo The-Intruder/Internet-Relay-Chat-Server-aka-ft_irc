@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:30 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/08 12:02:18 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/08 22:26:17 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,12 +106,12 @@ void Client::setNICKNAME(std::string NICK)
 
 void Client::setUSERNAME(std::string USERNAME)
 {
-    this->NICKNAME = USERNAME;
+    this->USERNAME = USERNAME;
 }
 
 void Client::setREALNAME(std::string REALNAME)
 {
-    this->NICKNAME = REALNAME;
+    this->REALNAME = REALNAME;
 }
 
 void Client::setfirstATH(bool v)
