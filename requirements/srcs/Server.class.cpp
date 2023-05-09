@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/09 18:42:17 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/09 20:01:17 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,12 +99,10 @@ void Server::HandleConnections(size_t pfdsindex)
         while(cmd != NULL)
         {
             MS.clear();
-            // std::cout << cmd << std::endl;
             std::string data = cmd;
             MS.push_back(data.substr(0, data.find_first_of(" ")));
             if(data.find(" ") != std::string::npos)
                 MS.push_back(data.substr(data.find_first_of(" ") + 1));
-            // std::cout << "processing cmd :" << data[0] << " args : " << data[1]<< std::endl;
             if(Authentication(pfdsindex) == true)
             {
                 // the client is authenticated to the server
