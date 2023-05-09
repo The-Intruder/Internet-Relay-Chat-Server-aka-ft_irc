@@ -6,13 +6,12 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/09 13:49:05 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/09 18:33:10 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef  IRCSERV_HEAD_HPP
 #define  IRCSERV_HEAD_HPP
-
 
 #include <iostream>
 #include <string>
@@ -29,6 +28,8 @@
  #include <string>
  #include <sstream>
  #include "srcs/errors.responces.macros.hpp"
+ #include <cstring>
+#include <time.h>
 
 
 
@@ -80,6 +81,7 @@ class Server
         std::vector<pollfd> pfds; // file descriptors to keep eyes on 
         std::map<int,Client>  ClientsMap; // clients map
         std::vector<std::string> MS; // mesaage splited by space
+        std::string Servtimeinfo; // server created time
  
     public:
         Server(int PORT, std::string PASSTWORD);
@@ -96,5 +98,6 @@ class Server
         
         void writemessagetoclients(size_t pfdsindex, std::string message); // pfdsindex is the fd socket of the client to send data to *
         void splitargs();
+        void getDateTime();
 };
 #endif

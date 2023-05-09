@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/09 15:59:39 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/09 18:42:17 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
 {
     SetupServer();
+    getDateTime();
     while(true)
     {
         int pollv = poll(&pfds[0], pfds.size(), -1);
@@ -86,34 +87,38 @@ void Server::AcceptConnections()
 
 void Server::HandleConnections(size_t pfdsindex)
 {
-    // std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
-    // Client& tmp = it->second;
     char buffer[MAX_INPUT + 1] = {0};
     int valread = read(pfds[pfdsindex].fd, buffer, sizeof(buffer));
     if(valread < 0)
             throw std::runtime_error("read failed");
     else if(valread > 0)
     {
-        // MS.clear();
-        std::string data = buffer; 
-        size_t data_len = strlen(buffer);
-        std::cout << data_len << buffer ;
-        // data.pop_back();
-        // MS.push_back(data.substr(0, data.find_first_of(" ")));
-        // if(data.find(" ") != std::string::npos)
-        //     MS.push_back(data.substr(data.find_first_of(" ") + 1));
-    //     if(Authentication(pfdsindex) == true && tmp.getfirstATH() == true)
-    //     {
-    //         // the client is authenticated to the server
-    //         // here I will parse the commads
-    //         //------------------------------------------------ broadcast
-    //         for(size_t j = 1; j < pfds.size(); j++)
-    //         {
-    //             if((pfds[j].revents & POLLOUT) && (j != pfdsindex))
-    //                 writemessagetoclients(j, data + "\n");
-    //         }
-    //         //--------------------------------------------------- broadcast
-    //     }
+        std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
+        Client& tmp = it->second;
+        char *cmd = std::strtok(buffer, "\r\n");
+        while(cmd != NULL)
+        {
+            MS.clear();
+            // std::cout << cmd << std::endl;
+            std::string data = cmd;
+            MS.push_back(data.substr(0, data.find_first_of(" ")));
+            if(data.find(" ") != std::string::npos)
+                MS.push_back(data.substr(data.find_first_of(" ") + 1));
+            // std::cout << "processing cmd :" << data[0] << " args : " << data[1]<< std::endl;
+            if(Authentication(pfdsindex) == true)
+            {
+                // the client is authenticated to the server
+                // here I will parse the commads
+                //------------------------------------------------ broadcast
+                for(size_t j = 1; j < pfds.size(); j++)
+                {
+                    if((pfds[j].revents & POLLOUT) && (j != pfdsindex) && tmp.getfirstATH() == true)
+                        writemessagetoclients(j, data + "\n");
+                }
+                //--------------------------------------------------- broadcast
+            }
+            cmd = std::strtok(NULL, "\r\n");
+        }
     }
 }
 
@@ -139,6 +144,7 @@ bool Server::Authentication(size_t pfdsindex)
         {            
             RPL_WELCOME(pfdsindex, tmp.getNICKNAME(), tmp.getUSERNAME());
             RPL_YOURHOST(pfdsindex);
+            RPL_CREATED(pfdsindex, Servtimeinfo);
         }
         tmp.setAuthenticated(true);
         return true;
@@ -243,4 +249,15 @@ void Server::splitargs()
         while (iss >> substring)
             MS.push_back(substring);
     }
+}
+
+void Server::getDateTime()
+{
+    char ServTime[80];
+   time_t RawTime;
+   struct tm* TimeInfos;
+   time(&RawTime);
+   TimeInfos = localtime(&RawTime);
+   strftime(ServTime, 80, "%Y-%m-%d %H:%M:%S", TimeInfos);
+   Servtimeinfo = ServTime;
 }
