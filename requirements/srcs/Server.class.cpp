@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/09 00:15:16 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/09 15:59:39 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,33 +86,34 @@ void Server::AcceptConnections()
 
 void Server::HandleConnections(size_t pfdsindex)
 {
-    std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
-    Client& tmp = it->second;
+    // std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
+    // Client& tmp = it->second;
     char buffer[MAX_INPUT + 1] = {0};
     int valread = read(pfds[pfdsindex].fd, buffer, sizeof(buffer));
     if(valread < 0)
             throw std::runtime_error("read failed");
     else if(valread > 0)
     {
-        MS.clear();
+        // MS.clear();
         std::string data = buffer; 
-        data.pop_back();
-        // std::cout << "'" << data << "' " << data.length() << std::endl; 
-        MS.push_back(data.substr(0, data.find_first_of(" ")));
-        if(data.find(" ") != std::string::npos)
-            MS.push_back(data.substr(data.find_first_of(" ") + 1));
-        if(Authentication(pfdsindex) == true)
-        {
-            // the client is authenticated to the server
-            // here I will parse the commads
-            //------------------------------------------------ broadcast
-            for(size_t j = 1; j < pfds.size(); j++)
-            {
-                if((pfds[j].revents & POLLOUT) && (j != pfdsindex) && tmp.getfirstATH() == true)
-                    writemessagetoclients(j, data);
-            }
-            //--------------------------------------------------- broadcast
-        }
+        size_t data_len = strlen(buffer);
+        std::cout << data_len << buffer ;
+        // data.pop_back();
+        // MS.push_back(data.substr(0, data.find_first_of(" ")));
+        // if(data.find(" ") != std::string::npos)
+        //     MS.push_back(data.substr(data.find_first_of(" ") + 1));
+    //     if(Authentication(pfdsindex) == true && tmp.getfirstATH() == true)
+    //     {
+    //         // the client is authenticated to the server
+    //         // here I will parse the commads
+    //         //------------------------------------------------ broadcast
+    //         for(size_t j = 1; j < pfds.size(); j++)
+    //         {
+    //             if((pfds[j].revents & POLLOUT) && (j != pfdsindex))
+    //                 writemessagetoclients(j, data + "\n");
+    //         }
+    //         //--------------------------------------------------- broadcast
+    //     }
     }
 }
 
@@ -136,8 +137,8 @@ bool Server::Authentication(size_t pfdsindex)
     {
         if(tmp.getAuthenticated() == false)
         {            
-            std::string tmp = "successfully authenticated\n";
-            writemessagetoclients(pfdsindex, tmp);
+            RPL_WELCOME(pfdsindex, tmp.getNICKNAME(), tmp.getUSERNAME());
+            RPL_YOURHOST(pfdsindex);
         }
         tmp.setAuthenticated(true);
         return true;

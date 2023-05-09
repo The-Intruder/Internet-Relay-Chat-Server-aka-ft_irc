@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/09 00:26:33 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/09 13:49:05 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@
  #include <utility>
  #include <string>
  #include <sstream>
- #include "srcs/errors.macros.hpp"
+ #include "srcs/errors.responces.macros.hpp"
 
 
 
