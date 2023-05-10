@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/10 15:51:54 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/10 18:01:00 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,9 @@ void    Server::SetupServer()
     tmpfd.fd = servsockfd;
     tmpfd.events = POLLIN;
     pfds.push_back(tmpfd);
-    std::cout << "waiting for connections port : " << this->PORT << " | PASS : " << PASSWORD << std::endl;  
+    std::cout << "Server started waiting for connections port : " << this->PORT << " | PASS : " << PASSWORD << std::endl;  
+    std::cout << "To athenticate to the server set in order:\n1.password: \"pass + <password>\"\n2.nickname: \"nick + <nickname>\"\n3.username: \"user + <username> <hostname> <servername> <realname>\"" << std::endl;
+    std::cout << "<-----------------------> waiting ... <------------------------->" << std::endl;
 }
 
 void Server::AcceptConnections()
@@ -91,13 +93,18 @@ void Server::HandleConnections(size_t pfdsindex)
     int valread = read(pfds[pfdsindex].fd, buffer, sizeof(buffer));
     if(valread < 0)
             throw std::runtime_error("read failed");
-    // else if(valread == 0)
-    // {
-    //     std::cout << "client disconnected" << std::endl;   
-    //     // remove client formr pollfd vector 
-    //     // remove client from map
-    //     // remove client from channel
-    // }
+    else if(valread == 0)
+    {
+        std::cout << "client disconnected sockfd: " << pfds[pfdsindex].fd << std::endl; 
+        // remove client from map
+        std::map<int,Client>::iterator itmap = ClientsMap.find(pfds[pfdsindex].fd);
+        ClientsMap.erase(itmap);
+        // remove client from pollfd vector
+        std::vector<pollfd>::iterator itvec = pfds.begin();
+        itvec += pfdsindex;
+        pfds.erase(itvec);
+        // remove client from channel
+    }
     else if(valread > 0)
     {
         std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
@@ -148,7 +155,8 @@ bool Server::Authentication(size_t pfdsindex)
     if(tmp.getVP() == true &&  tmp.getVU() == true && tmp.getVN() == true)
     {
         if(tmp.getAuthenticated() == false)
-        {            
+        {
+            std::cout << "client connected sockfd: " << pfds[pfdsindex].fd << std::endl; 
             RPL_WELCOME(pfdsindex, tmp.getNICKNAME(), tmp.getUSERNAME());
             RPL_YOURHOST(pfdsindex);
             RPL_CREATED(pfdsindex, Servtimeinfo);

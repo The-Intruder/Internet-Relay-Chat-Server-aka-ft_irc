@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:54:49 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/10 12:00:38 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/10 18:14:10 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,9 +68,7 @@ int main(int ac, char **av)
 
 
 // TODO:
-// list of commands to be executed form other contributors
-// look for if the parsing of the cmd
 // bot  
 // check ftp 
 
-// TODO: cntrl c in client , cmd order , cmd parse like nick
+// TODO: cmd parse like nick
