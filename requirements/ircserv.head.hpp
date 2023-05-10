@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.head.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Abellakr, Hssain, Mohamed Amine            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/07 14:52:22 by abellakr         ###   ########.fr       */
+/*   Created: 2023/04/29 10:55:17                      #+#    #+#             */
+/*   Updated: 2023/05/07 14:52:22                     ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@
 // error replies macros
 #define ERR_NEEDMOREPARAMS 461
 #define ERR_ALREADYREGISTRED 462
+
+
 
 class Client
 {
@@ -59,6 +61,38 @@ class Client
         void setVM(bool v);
         void setAuthenticated(bool v);
         void setSockfd(int v);
+};
+
+class IRCChannel {
+    private:
+        std::map<int,Client>            _joinedUsers; // Users that joined specifec channel
+        std::map<int,Client>            _admins; // Operators/Admins of a specifec channel
+        std::string                     _channel_name;
+        std::string                     _channel_pass;
+        std::string                     _topic;
+        std::string                     _key;
+    public:
+        uint64_t                        _client_limit;
+        uint16_t                        _modes;
+
+    public:
+        IRCChannel(std::string channelName, std::string channelPass);
+        IRCChannel(IRCChannel const &src);
+        const IRCChannel &operator=(IRCChannel const &src);
+        ~IRCChannel();
+
+        bool        isPrivate() const;
+        bool        isSecret() const;
+        bool        isInviteOnly() const;
+        bool        isOnlyVoiceAndOps() const;
+        bool        isNoOutsideMessages() const;
+        bool        isOnlyOpsChangeTopic() const;
+
+        void setChannelName(const std::string &channelName);
+        std::string getChannelName() const;
+
+        uint64_t    getClientLimit() const;
+        void        setClientLimit(uint64_t _client_limit);
 };
 
 class Server

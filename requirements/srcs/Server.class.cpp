@@ -99,9 +99,9 @@ void Server::HandleConnections(size_t pfdsindex)
         {
             // the client is authenticated to the server
             // -------------------------------------------------- broadcast
-            for(size_t j = 1; j < pfds.size(); j++)
-                if((pfds[j].revents & POLLOUT) && j != pfdsindex)
-                    writemessagetoclients(j, buffer, sizeof(buffer));
+            if (MS.at(0) == "JOIN" && MS.size() == 2){
+                std::cout << MS.at(0) << std::endl;
+            }
             // ---------------------------------------------------------- broadcast
         }
     }
