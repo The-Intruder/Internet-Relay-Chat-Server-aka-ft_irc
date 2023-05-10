@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/09 20:01:17 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/10 15:51:54 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,13 @@ void Server::HandleConnections(size_t pfdsindex)
     int valread = read(pfds[pfdsindex].fd, buffer, sizeof(buffer));
     if(valread < 0)
             throw std::runtime_error("read failed");
+    // else if(valread == 0)
+    // {
+    //     std::cout << "client disconnected" << std::endl;   
+    //     // remove client formr pollfd vector 
+    //     // remove client from map
+    //     // remove client from channel
+    // }
     else if(valread > 0)
     {
         std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
@@ -107,6 +114,8 @@ void Server::HandleConnections(size_t pfdsindex)
             {
                 // the client is authenticated to the server
                 // here I will parse the commads
+                if(tmp.getfirstATH() == true)
+                    executecommand(pfdsindex);
                 //------------------------------------------------ broadcast
                 for(size_t j = 1; j < pfds.size(); j++)
                 {
@@ -258,4 +267,37 @@ void Server::getDateTime()
    TimeInfos = localtime(&RawTime);
    strftime(ServTime, 80, "%Y-%m-%d %H:%M:%S", TimeInfos);
    Servtimeinfo = ServTime;
+}
+
+void Server::executecommand(size_t pfdsindex)
+{
+    if(MS[0] == "BOT" || MS[0] == "bot") // bot
+        std::cout << "bot\n";
+    else if(MS[0] == "NICK" || MS[0] == "nick") // nick 
+        std::cout << "NICK\n";
+    else if(MS[0] == "MODE" || MS[0] == "mode") // mode
+        std::cout << "MODE\n";
+    else if(MS[0] == "QUIT" || MS[0] == "quit") // quit
+        std::cout << "QUIT\n"; 
+    else if(MS[0] == "JOIN" || MS[0] == "join") // join
+        std::cout << "join\n";
+    else if(MS[0] == "PART" || MS[0] == "part") // part
+        std::cout << "part\n"; 
+    else if(MS[0] == "TOPIC" || MS[0] == "topic") // part 
+        std::cout << "topic\n"; 
+    else if(MS[0] == "NAMES" || MS[0] == "names") // names
+        std::cout << "names\n"; 
+    else if(MS[0] == "INVITE" || MS[0] == "invite") // invite
+        std::cout << "invite\n";
+    else if(MS[0] == "KICK" || MS[0] == "kick") // kick
+        std::cout << "kick\n";
+    else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg") // privmsg
+        std::cout << "privmsg\n";
+    else if(MS[0] == "NOTICE" || MS[0] == "notice") // notice
+        std::cout << "notice\n"; 
+    else // command not found
+    {
+        if(MS[0] != "PING" && MS[0] != "PONG") // ignore PING AND PONG requests from limechat
+            ERR_CMDNOTFOUND(pfdsindex);    
+    }
 }

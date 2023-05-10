@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/09 13:19:28 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/09 18:48:51 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/10 15:08:06 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,5 +21,6 @@
 #define RPL_WELCOME(pfdsindex, nickname, username){std::string message = ":IrcTheThreeMusketeers 001 " + nickname + " !" + username + " @localhost Welcome to the Internet Relay Network\n"; writemessagetoclients(pfdsindex, message);}
 #define RPL_YOURHOST(pfdsindex){std::string message = ":IrcTheThreeMusketeers 002 Your host is IrcTheThreeMusketeers, running version 1.0\n"; writemessagetoclients(pfdsindex, message);}
 #define RPL_CREATED(pfdsindex, timeinfo){std::string message = ":IrcTheThreeMusketeers 003 This server was created " + timeinfo + "\n";writemessagetoclients(pfdsindex, message);}
+#define ERR_CMDNOTFOUND(pfdsindex){std::string message = ":IrcTheThreeMusketeers 461 command not found\n";writemessagetoclients(pfdsindex, message);}
 
 #endif

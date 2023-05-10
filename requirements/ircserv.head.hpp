@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/09 18:33:10 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/10 15:47:34 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,5 +99,7 @@ class Server
         void writemessagetoclients(size_t pfdsindex, std::string message); // pfdsindex is the fd socket of the client to send data to *
         void splitargs();
         void getDateTime();
-};
+        void executecommand(size_t pfdsindex);
+        // commands 
+}; 
 #endif
