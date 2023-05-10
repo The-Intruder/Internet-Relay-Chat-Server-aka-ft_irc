@@ -33,8 +33,8 @@
 
 
 // error replies macros
-#define ERR_NEEDMOREPARAMS 461
-#define ERR_ALREADYREGISTRED 462
+// #define ERR_NEEDMOREPARAMS 461
+// #define ERR_ALREADYREGISTRED 462
 
 class Client
 {
@@ -68,6 +68,10 @@ class Client
         void setVU(bool v);
         void setAuthenticated(bool v);
         void setSockfd(int v);
+        void setNICKNAME(std::string NICK);
+        void setUSERNAME(std::string USERNAME);
+        void setREALNAME(std::string REALNAME);
+        void setfirstATH(bool v);
 };
 
 class IRCChannel {
