@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/10 18:01:00 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/10 19:39:02 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,21 +192,28 @@ void Server::checknick(size_t pfdsindex, Client& client)
     }
     else if((MS[0] == "NICK" || MS[0] == "nick") && client.getVN() == false && client.getVP() == true)
     {
-        std::map<int, Client>::iterator it = ClientsMap.begin();
-        while(it != ClientsMap.end())
+        if((MS[1][0] > 'a' && MS[1][0] < 'z') || (MS[1][0] > 'A' && MS[1][0] < 'Z'))
         {
-            if(it->second.getNICKNAME() == MS[1])
-                break;
-            it++;   
+            std::map<int, Client>::iterator it = ClientsMap.begin();
+            while(it != ClientsMap.end())
+            {
+                if(it->second.getNICKNAME() == MS[1])
+                    break;
+                it++;   
+            }
+            if(it != ClientsMap.end())
+            {
+                ERR_NICKNAMEINUSE(pfdsindex, MS[1]);
+            }
+            else if(it == ClientsMap.end())
+            {
+                client.setNICKNAME(MS[1]);
+                client.setVN(true);
+            }
         }
-        if(it != ClientsMap.end())
+        else
         {
-            ERR_NICKNAMEINUSE(pfdsindex, MS[1]);
-        }
-        else if(it == ClientsMap.end())
-        {
-            client.setNICKNAME(MS[1]);
-            client.setVN(true);
+            ERR_ERRONEUSNICKNAME(pfdsindex, MS[1]);
         }
     }
     else if((MS[0] == "NICK" || MS[0] == "nick") && client.getVN() == true && client.getVP() == true)
