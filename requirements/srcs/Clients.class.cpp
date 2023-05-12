@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:30 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/12 07:34:06 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/12 10:47:13 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,10 @@ std::string Client::getbuffer() const
 {
     return this->buffer;
 }
+long Client::gettime() const
+{
+    return this->connectedtime;
+}
 // seters
 void Client::setVP(bool v)
 {
@@ -127,4 +131,9 @@ void Client::setfirstATH(bool v)
 void Client::setbuffer(std::string arg)
 {
     this->buffer = arg;
+}
+
+void Client::settime(long time)
+{
+    this->connectedtime = time;
 }

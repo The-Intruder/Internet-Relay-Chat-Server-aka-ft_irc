@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/12 08:19:48 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/12 11:14:01 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ void Server::HandleConnections(size_t pfdsindex)
     int valread = read(pfds[pfdsindex].fd, buffer, sizeof(buffer));
     std::string bufferobj = buffer;
     if(valread < 0)
-            throw std::runtime_error("read failed");
+        throw std::runtime_error("read failed");
     else if(valread == 0)
     {
         std::cout << "client disconnected sockfd: " << pfds[pfdsindex].fd << std::endl; 
@@ -176,6 +176,7 @@ bool Server::Authentication(size_t pfdsindex)
             RPL_WELCOME(pfdsindex, tmp.getNICKNAME(), tmp.getUSERNAME());
             RPL_YOURHOST(pfdsindex);
             RPL_CREATED(pfdsindex, Servtimeinfo);
+            tmp.settime(ft_gettime());
         }
         tmp.setAuthenticated(true);
         return true;
@@ -303,7 +304,7 @@ void Server::getDateTime()
 void Server::executecommand(size_t pfdsindex)
 {
     if(MS[0] == "BOT" || MS[0] == "bot") // bot
-        std::cout << "bot\n";
+        bot(pfdsindex);
     else if(MS[0] == "NICK" || MS[0] == "nick") // nick 
         std::cout << "NICK\n";
     else if(MS[0] == "MODE" || MS[0] == "mode") // mode
@@ -331,4 +332,13 @@ void Server::executecommand(size_t pfdsindex)
         if(MS[0] != "PING" && MS[0] != "PONG") // ignore PING AND PONG requests from limechat
             ERR_CMDNOTFOUND(pfdsindex);    
     }
+}
+
+
+long	Server::ft_gettime(void)
+{
+	struct timeval	current_time;
+
+	gettimeofday(&current_time, NULL);
+	return (current_time.tv_sec);
 }
