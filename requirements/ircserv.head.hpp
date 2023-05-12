@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/10 16:46:40 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/12 07:26:12 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ class Client
         bool Authenticated; // hadi matkhdmoch biha 
         int sockfd; 
         bool firstATH; // ila biti t3rf wach ithentificated khdm bhada
+        std::string buffer; // later
     public:
         Client(int newsockfd, unsigned int IP);
         ~Client();
@@ -59,6 +60,7 @@ class Client
         std::string getUSERNAME() const;
         std::string getREALNAME() const;
         bool getfirstATH() const;
+        std::string getbuffer() const;
 
         void setVP(bool v);
         void setVN(bool v);
@@ -69,6 +71,7 @@ class Client
         void setUSERNAME(std::string USERNAME);
         void setREALNAME(std::string REALNAME);
         void setfirstATH(bool v);
+        void setbuffer(std::string arg);
 };
 
 class Server
@@ -82,6 +85,7 @@ class Server
         std::map<int,Client>  ClientsMap; // clients map
         std::vector<std::string> MS; // mesaage splited by space
         std::string Servtimeinfo; // server created time
+        std::string buffertmp; // this is for ignoring control D behavior 
  
     public:
         Server(int PORT, std::string PASSTWORD);
@@ -101,5 +105,6 @@ class Server
         void getDateTime();
         void executecommand(size_t pfdsindex);
         // commands 
+        void bot();
 }; 
 #endif

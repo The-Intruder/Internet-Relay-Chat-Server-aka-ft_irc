@@ -6,14 +6,14 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/10 19:39:02 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/12 08:19:48 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 
 #include "../ircserv.head.hpp"
-
+// static int counter = 0;
 Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
 {
     SetupServer();
@@ -91,6 +91,7 @@ void Server::HandleConnections(size_t pfdsindex)
 {
     char buffer[MAX_INPUT + 1] = {0};
     int valread = read(pfds[pfdsindex].fd, buffer, sizeof(buffer));
+    std::string bufferobj = buffer;
     if(valread < 0)
             throw std::runtime_error("read failed");
     else if(valread == 0)
@@ -109,7 +110,21 @@ void Server::HandleConnections(size_t pfdsindex)
     {
         std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
         Client& tmp = it->second;
-        char *cmd = std::strtok(buffer, "\r\n");
+        size_t pos = 0;
+        while((pos = bufferobj.find("\r\n", pos)) != std::string::npos)
+        {
+            bufferobj.replace(pos, 2, "\n");
+            pos += 2;
+        }
+        if(bufferobj.find_first_of("\n") == std::string::npos)
+        {
+
+            tmp.setbuffer(tmp.getbuffer() + bufferobj);
+            return;
+        }
+        else
+            tmp.setbuffer(tmp.getbuffer() + bufferobj);        
+        char *cmd = std::strtok((char *)tmp.getbuffer().c_str(), "\n");
         while(cmd != NULL)
         {
             MS.clear();
@@ -124,15 +139,16 @@ void Server::HandleConnections(size_t pfdsindex)
                 if(tmp.getfirstATH() == true)
                     executecommand(pfdsindex);
                 //------------------------------------------------ broadcast
-                for(size_t j = 1; j < pfds.size(); j++)
-                {
-                    if((pfds[j].revents & POLLOUT) && (j != pfdsindex) && tmp.getfirstATH() == true)
-                        writemessagetoclients(j, data + "\n");
-                }
+                // for(size_t j = 1; j < pfds.size(); j++)
+                // {
+                //     if((pfds[j].revents & POLLOUT) && (j != pfdsindex) && tmp.getfirstATH() == true)
+                //         writemessagetoclients(j, data + "\n");
+                // }
                 //--------------------------------------------------- broadcast
             }
             cmd = std::strtok(NULL, "\r\n");
         }
+        tmp.setbuffer("");
     }
 }
 

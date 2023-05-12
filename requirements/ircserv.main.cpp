@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:54:49 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/10 18:14:10 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/11 22:08:16 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,5 +70,8 @@ int main(int ac, char **av)
 // TODO:
 // bot  
 // check ftp 
-
-// TODO: cmd parse like nick
+// add ideas for bot 
+// handle ctrnl d 
+// balssii every \r\n b \n 
+// check wach ster kaml khen
+// parsi

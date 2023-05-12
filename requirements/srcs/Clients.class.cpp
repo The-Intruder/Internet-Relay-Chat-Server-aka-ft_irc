@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:30 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/08 22:26:17 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/12 07:34:06 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,11 @@ bool Client::getfirstATH() const
 {
     return this->firstATH;
 }
+
+std::string Client::getbuffer() const
+{
+    return this->buffer;
+}
 // seters
 void Client::setVP(bool v)
 {
@@ -117,4 +122,9 @@ void Client::setREALNAME(std::string REALNAME)
 void Client::setfirstATH(bool v)
 {
     this->firstATH = v;
+}
+
+void Client::setbuffer(std::string arg)
+{
+    this->buffer = arg;
 }
