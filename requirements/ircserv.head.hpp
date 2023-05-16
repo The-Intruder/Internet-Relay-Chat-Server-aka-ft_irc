@@ -147,10 +147,9 @@ class Server
         long ft_gettime(void);
         void executecommand(size_t pfdsindex);
         // commands
+        void bot(size_t pfdsindex);
         /*---------------------- Hssain-Part ------------------ */
         void AddChannel(std::string args);
         void RemoveChannel();
-        // commands 
-        void bot(size_t pfdsindex);
 }; 
 #endif
