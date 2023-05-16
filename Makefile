@@ -32,6 +32,8 @@ HEADER		:= requirements/ircserv.head.hpp
 
 SRCS_DIR := requirements/srcs/
 SRCS_LST := Server.class.cpp Clients.class.cpp  IRCChannels.class.cpp Channels_managment.cpp
+SRCS_LST := Server.class.cpp Clients.class.cpp Bot.cpp
+SRCS := ${addprefix ${SRCS_DIR}, ${SRCS_LST}}
 
 OBJS_DIR := requirements/objs/
 OBJS_LST := ${patsubst %.cpp, %.obj, ${SRCS_LST}}

@@ -31,7 +31,7 @@
  #include <cstring>
 #include <time.h>
 #include <cstdlib>
-
+#include <sys/time.h>
 
 // error replies macros
 // #define ERR_NEEDMOREPARAMS 461
@@ -50,6 +50,8 @@ class Client
         bool Authenticated; // hadi matkhdmoch biha 
         int sockfd; 
         bool firstATH; // ila biti t3rf wach ithentificated khdm bhada
+        std::string buffer; // each client buffer
+        long connectedtime;// time to connect to the server
     public:
         Client(int newsockfd, unsigned int IP);
         ~Client();
@@ -63,6 +65,8 @@ class Client
         std::string getUSERNAME() const;
         std::string getREALNAME() const;
         bool getfirstATH() const;
+        std::string getbuffer() const;
+        long gettime() const;
 
         void setVP(bool v);
         void setVN(bool v);
@@ -73,6 +77,8 @@ class Client
         void setUSERNAME(std::string USERNAME);
         void setREALNAME(std::string REALNAME);
         void setfirstATH(bool v);
+        void setbuffer(std::string arg);
+        void settime(long time);
 };
 
 class IRCChannel {
@@ -120,6 +126,7 @@ class Server
         std::string Servtimeinfo; // server created time
         /*---------------------- Hssain-Part ------------------ */
         std::map<std::string,IRCChannel>  ChannelsMap; // Channels map
+        std::string buffertmp; // this is for ignoring control D behavior 
  
     public:
         Server(int PORT, std::string PASSTWORD);
@@ -137,10 +144,13 @@ class Server
         void writemessagetoclients(size_t pfdsindex, std::string message); // pfdsindex is the fd socket of the client to send data to *
         void splitargs();
         void getDateTime();
+        long ft_gettime(void);
         void executecommand(size_t pfdsindex);
         // commands
         /*---------------------- Hssain-Part ------------------ */
         void AddChannel(std::string args);
         void RemoveChannel();
+        // commands 
+        void bot(size_t pfdsindex);
 }; 
 #endif

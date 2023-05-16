@@ -6,14 +6,14 @@ l/* ************************************************************************** *
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/10 15:51:54 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/12 11:14:01 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 
 #include "../ircserv.head.hpp"
-
+// static int counter = 0;
 Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
 {
     SetupServer();
@@ -65,7 +65,9 @@ void    Server::SetupServer()
     tmpfd.fd = servsockfd;
     tmpfd.events = POLLIN;
     pfds.push_back(tmpfd);
-    std::cout << "waiting for connections port : " << this->PORT << " | PASS : " << PASSWORD << std::endl;  
+    std::cout << "Server started waiting for connections port : " << this->PORT << " | PASS : " << PASSWORD << std::endl;  
+    std::cout << "To athenticate to the server set in order:\n1.password: \"pass + <password>\"\n2.nickname: \"nick + <nickname>\"\n3.username: \"user + <username> <hostname> <servername> <realname>\"" << std::endl;
+    std::cout << "<-----------------------> waiting ... <------------------------->" << std::endl;
 }
 
 void Server::AcceptConnections()
@@ -89,20 +91,40 @@ void Server::HandleConnections(size_t pfdsindex)
 {
     char buffer[MAX_INPUT + 1] = {0};
     int valread = read(pfds[pfdsindex].fd, buffer, sizeof(buffer));
+    std::string bufferobj = buffer;
     if(valread < 0)
-            throw std::runtime_error("read failed");
-    // else if(valread == 0)
-    // {
-    //     std::cout << "client disconnected" << std::endl;   
-    //     // remove client formr pollfd vector 
-    //     // remove client from map
-    //     // remove client from channel
-    // }
+        throw std::runtime_error("read failed");
+    else if(valread == 0)
+    {
+        std::cout << "client disconnected sockfd: " << pfds[pfdsindex].fd << std::endl; 
+        // remove client from map
+        std::map<int,Client>::iterator itmap = ClientsMap.find(pfds[pfdsindex].fd);
+        ClientsMap.erase(itmap);
+        // remove client from pollfd vector
+        std::vector<pollfd>::iterator itvec = pfds.begin();
+        itvec += pfdsindex;
+        pfds.erase(itvec);
+        // remove client from channel
+    }
     else if(valread > 0)
     {
         std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
         Client& tmp = it->second;
-        char *cmd = std::strtok(buffer, "\r\n");
+        size_t pos = 0;
+        while((pos = bufferobj.find("\r\n", pos)) != std::string::npos)
+        {
+            bufferobj.replace(pos, 2, "\n");
+            pos += 2;
+        }
+        if(bufferobj.find_first_of("\n") == std::string::npos)
+        {
+
+            tmp.setbuffer(tmp.getbuffer() + bufferobj);
+            return;
+        }
+        else
+            tmp.setbuffer(tmp.getbuffer() + bufferobj);        
+        char *cmd = std::strtok((char *)tmp.getbuffer().c_str(), "\n");
         while(cmd != NULL)
         {
             MS.clear();
@@ -117,15 +139,16 @@ void Server::HandleConnections(size_t pfdsindex)
                 if(tmp.getfirstATH() == true)
                     executecommand(pfdsindex);
                 //------------------------------------------------ broadcast
-                for(size_t j = 1; j < pfds.size(); j++)
-                {
-                    if((pfds[j].revents & POLLOUT) && (j != pfdsindex) && tmp.getfirstATH() == true)
-                        writemessagetoclients(j, data + "\n");
-                }
+                // for(size_t j = 1; j < pfds.size(); j++)
+                // {
+                //     if((pfds[j].revents & POLLOUT) && (j != pfdsindex) && tmp.getfirstATH() == true)
+                //         writemessagetoclients(j, data + "\n");
+                // }
                 //--------------------------------------------------- broadcast
             }
             cmd = std::strtok(NULL, "\r\n");
         }
+        tmp.setbuffer("");
     }
 }
 
@@ -148,10 +171,12 @@ bool Server::Authentication(size_t pfdsindex)
     if(tmp.getVP() == true &&  tmp.getVU() == true && tmp.getVN() == true)
     {
         if(tmp.getAuthenticated() == false)
-        {            
+        {
+            std::cout << "client connected sockfd: " << pfds[pfdsindex].fd << std::endl; 
             RPL_WELCOME(pfdsindex, tmp.getNICKNAME(), tmp.getUSERNAME());
             RPL_YOURHOST(pfdsindex);
             RPL_CREATED(pfdsindex, Servtimeinfo);
+            tmp.settime(ft_gettime());
         }
         tmp.setAuthenticated(true);
         return true;
@@ -184,21 +209,28 @@ void Server::checknick(size_t pfdsindex, Client& client)
     }
     else if((MS[0] == "NICK" || MS[0] == "nick") && client.getVN() == false && client.getVP() == true)
     {
-        std::map<int, Client>::iterator it = ClientsMap.begin();
-        while(it != ClientsMap.end())
+        if((MS[1][0] > 'a' && MS[1][0] < 'z') || (MS[1][0] > 'A' && MS[1][0] < 'Z'))
         {
-            if(it->second.getNICKNAME() == MS[1])
-                break;
-            it++;   
+            std::map<int, Client>::iterator it = ClientsMap.begin();
+            while(it != ClientsMap.end())
+            {
+                if(it->second.getNICKNAME() == MS[1])
+                    break;
+                it++;   
+            }
+            if(it != ClientsMap.end())
+            {
+                ERR_NICKNAMEINUSE(pfdsindex, MS[1]);
+            }
+            else if(it == ClientsMap.end())
+            {
+                client.setNICKNAME(MS[1]);
+                client.setVN(true);
+            }
         }
-        if(it != ClientsMap.end())
+        else
         {
-            ERR_NICKNAMEINUSE(pfdsindex, MS[1]);
-        }
-        else if(it == ClientsMap.end())
-        {
-            client.setNICKNAME(MS[1]);
-            client.setVN(true);
+            ERR_ERRONEUSNICKNAME(pfdsindex, MS[1]);
         }
     }
     else if((MS[0] == "NICK" || MS[0] == "nick") && client.getVN() == true && client.getVP() == true)
@@ -272,7 +304,7 @@ void Server::getDateTime()
 void Server::executecommand(size_t pfdsindex)
 {
     if(MS[0] == "BOT" || MS[0] == "bot") // bot
-        std::cout << "bot\n";
+        bot(pfdsindex);
     else if(MS[0] == "NICK" || MS[0] == "nick") // nick 
         std::cout << "NICK\n";
     else if(MS[0] == "MODE" || MS[0] == "mode") // mode
@@ -300,4 +332,13 @@ void Server::executecommand(size_t pfdsindex)
         if(MS[0] != "PING" && MS[0] != "PONG") // ignore PING AND PONG requests from limechat
             ERR_CMDNOTFOUND(pfdsindex);    
     }
+}
+
+
+long	Server::ft_gettime(void)
+{
+	struct timeval	current_time;
+
+	gettimeofday(&current_time, NULL);
+	return (current_time.tv_sec);
 }
