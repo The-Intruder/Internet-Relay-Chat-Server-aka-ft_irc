@@ -30,6 +30,7 @@
  #include "srcs/errors.responces.macros.hpp"
  #include <cstring>
 #include <time.h>
+#include <cstdlib>
 
 
 // error replies macros
@@ -117,6 +118,8 @@ class Server
         std::map<int,Client>  ClientsMap; // clients map
         std::vector<std::string> MS; // mesaage splited by space
         std::string Servtimeinfo; // server created time
+        /*---------------------- Hssain-Part ------------------ */
+        std::map<std::string,IRCChannel>  ChannelsMap; // Channels map
  
     public:
         Server(int PORT, std::string PASSTWORD);
@@ -127,14 +130,17 @@ class Server
         void SaveClients(int newsockfd, unsigned int IP); // save the connected client to the map of clients
 
         bool Authentication(size_t pfdsindex);
-        void checkpass(size_t pfdsindex, Client& client); 
-        void checknick(size_t pfdsindex, Client& client); 
-        void checkuser(size_t pfdsindex, Client& client); 
+        void checkpass(size_t pfdsindex, Client& client);
+        void checknick(size_t pfdsindex, Client& client);
+        void checkuser(size_t pfdsindex, Client& client);
         
         void writemessagetoclients(size_t pfdsindex, std::string message); // pfdsindex is the fd socket of the client to send data to *
         void splitargs();
         void getDateTime();
         void executecommand(size_t pfdsindex);
-        // commands 
+        // commands
+        /*---------------------- Hssain-Part ------------------ */
+        void AddChannel(std::string args);
+        void RemoveChannel();
 }; 
 #endif

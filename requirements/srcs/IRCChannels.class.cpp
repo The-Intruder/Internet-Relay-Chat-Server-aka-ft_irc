@@ -21,6 +21,38 @@ IRCChannel::IRCChannel(std::string channelName, std::string channelPass){
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
+
+IRCChannel::IRCChannel(IRCChannel const &src){
+    _joinedUsers = src._joinedUsers;
+    _admins = src._admins;
+    _channel_name = src._channel_name;
+    _channel_pass = src._channel_pass;
+    _topic = src._topic;
+    _key = src._key;
+    _client_limit = src._client_limit;
+    _modes = src._modes;
+} 
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+
+const IRCChannel &IRCChannel::operator=(IRCChannel const &src){
+    if (this != &src) {
+        _joinedUsers = src._joinedUsers;
+        _admins = src._admins;
+        _channel_name = src._channel_name;
+        _channel_pass = src._channel_pass;
+        _topic = src._topic;
+        _key = src._key;
+        _client_limit = src._client_limit;
+        _modes = src._modes;
+    }
+    return *this;
+}
+
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
 IRCChannel::~IRCChannel() {}
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */

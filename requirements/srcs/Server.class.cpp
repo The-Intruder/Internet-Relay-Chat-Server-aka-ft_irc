@@ -278,15 +278,15 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "MODE" || MS[0] == "mode") // mode
         std::cout << "MODE\n";
     else if(MS[0] == "QUIT" || MS[0] == "quit") // quit
-        std::cout << "QUIT\n"; 
+        std::cout << "QUIT\n";
     else if(MS[0] == "JOIN" || MS[0] == "join") // join
-        std::cout << "join\n";
+        this->AddChannel(MS[1]);
     else if(MS[0] == "PART" || MS[0] == "part") // part
-        std::cout << "part\n"; 
+        std::cout << "part\n";
     else if(MS[0] == "TOPIC" || MS[0] == "topic") // part 
-        std::cout << "topic\n"; 
+        std::cout << "topic\n";
     else if(MS[0] == "NAMES" || MS[0] == "names") // names
-        std::cout << "names\n"; 
+        std::cout << "names\n";
     else if(MS[0] == "INVITE" || MS[0] == "invite") // invite
         std::cout << "invite\n";
     else if(MS[0] == "KICK" || MS[0] == "kick") // kick
@@ -294,7 +294,7 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg") // privmsg
         std::cout << "privmsg\n";
     else if(MS[0] == "NOTICE" || MS[0] == "notice") // notice
-        std::cout << "notice\n"; 
+        std::cout << "notice\n";
     else // command not found
     {
         if(MS[0] != "PING" && MS[0] != "PONG") // ignore PING AND PONG requests from limechat
