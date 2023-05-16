@@ -125,6 +125,11 @@ void Server::HandleConnections(size_t pfdsindex)
         else
             tmp.setbuffer(tmp.getbuffer() + bufferobj);        
         char *cmd = std::strtok((char *)tmp.getbuffer().c_str(), "\n");
+        // std::cout << "\n---------------------------------------------\n";
+        // std::cout << (char *)tmp.getbuffer().c_str() << "\n\n";
+        // std::cout << tmp.getbuffer() << "\n\n";
+        // std::cout << cmd << std::endl;
+        // std::cout << "\n---------------------------------------------\n";
         while(cmd != NULL)
         {
             MS.clear();
@@ -168,6 +173,7 @@ bool Server::Authentication(size_t pfdsindex)
     checkpass(pfdsindex, tmp);
     checknick(pfdsindex, tmp);
     checkuser(pfdsindex, tmp);
+    // std::cout << tmp.getVP() << tmp.getVU() << tmp.getVN() << std::endl;
     if(tmp.getVP() == true &&  tmp.getVU() == true && tmp.getVN() == true)
     {
         if(tmp.getAuthenticated() == false)
@@ -239,11 +245,12 @@ void Server::checknick(size_t pfdsindex, Client& client)
 
 void Server::checkuser(size_t pfdsindex, Client& client)
 {
+    // std::cout << MS.size() << MS[0] << client.getVU() << client.getVP() << client.getVN() << std::endl;
     if((MS.size() < 5) && (MS[0] == "USER" || MS[0] == "user") && client.getVU() == false && client.getVP() == true && client.getVN() == true)
     {
         ERR_NEEDMOREPARAMS(pfdsindex, MS[0]);
     }
-    else if((MS[0] == "USER" || MS[0] == "user") && client.getVU() == false && client.getVP() == true && client.getVN() == true)
+    else if((MS.size() >= 5) && (MS[0] == "USER" || MS[0] == "user") && client.getVU() == false && client.getVP() == true && client.getVN() == true)
     {
         std::map<int, Client>::iterator it = ClientsMap.begin();
         while(it != ClientsMap.end())
