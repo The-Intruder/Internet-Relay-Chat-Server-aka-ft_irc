@@ -1,12 +1,10 @@
 /* -------------------------------------------------------------------------- */
-/*  File: ircserv.head.cpp                                                    */
-/*  Brief: IRC server header file                                             */
+/*  File: ircserv.main.cpp                                                    */
+/*  Brief: IRC server main file                                               */
 /*  Authors:                                                                  */
 /*   - Mohamed Amine Naimi                                                    */
 /*   - Hssain Ait Kadir                                                       */
 /*   - Abdellah Bellakrim                                                     */
-/*  Version: 1.0                                                              */
-/*  License: GPL-3.0                                                          */
 /* -------------------------------------------------------------------------- */
 
 #include "ircserv.head.hpp"
@@ -28,19 +26,19 @@ static int check_for_errors(int argc, char **argv)
     if (argc != 3)
     {
         std::cerr << "Error: invalid arguments count" << std::endl;
-        std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl;
+        std::cout << "Usage: " << argv[0] << " <port> <password>" << std::endl;
         return EXIT_FAILURE;
     }
     else if (port_is_valid(argv[1]) == false)
     {
         std::cerr << "Error: invalid port number" << std::endl;
-        std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl;
+        std::cout << "Usage: " << argv[0] << " <port> <password>" << std::endl;
         return EXIT_FAILURE;
     }
     else if (std::string(argv[2]).size() < 8)
     {
         std::cerr << "Error: password must be at least 8 characters long" << std::endl;
-        std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl;
+        std::cout << "Usage: " << argv[0] << " <port> <password>" << std::endl;
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
@@ -61,8 +59,8 @@ int main(int argc, char **argv)
     /* ---------------------------- Parse Data ------------------------------ */
 
     IRCServer ircserv(argv[2], std::stoi(argv[1]));
-    std::cout << "Server password: " << ircserv.server_pass << std::endl;
-    std::cout << "Server port: " << ircserv.server_port << std::endl;
+    std::cout << "Server password: " << ircserv.get_server_pass() << std::endl;
+    std::cout << "Server port    : " << ircserv.get_server_port() << std::endl;
 
     /* --------------------------- Create Socket ---------------------------- */
 
@@ -79,7 +77,7 @@ int main(int argc, char **argv)
     sockaddr_in serverAddress;
     std::memset(&serverAddress, 0, sizeof(serverAddress));
     serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(ircserv.server_port);
+    serverAddress.sin_port = htons(ircserv.get_server_port());
     serverAddress.sin_addr.s_addr = INADDR_ANY;
     if (bind(sockfd, reinterpret_cast<struct sockaddr *>(&serverAddress), sizeof(serverAddress)) == -1)
     {
@@ -93,7 +91,7 @@ int main(int argc, char **argv)
     if (listen(sockfd, 5) < 0)
     {
         std::cerr << "Failed to listen on socket" << std::endl;
-        return 1;
+        return EXIT_FAILURE;
     }
     std::cout << "Listening for incoming connections..." << std::endl;
 
@@ -110,6 +108,7 @@ int main(int argc, char **argv)
             std::cerr << "Failed to accept connection" << std::endl;
             continue;
         }
+        std::cout << "-----------------------------------------------" << std::endl;
         std::cout << "Accepted a connection from: " << inet_ntoa(clientAddr.sin_addr) << std::endl;
         std::cout << "Client socket: " << clientSockfd << std::endl;
         std::cout << "Waiting for client to send data..." << std::endl;
@@ -125,11 +124,11 @@ int main(int argc, char **argv)
             if (bytesRead > 0)
             {
                 buffer[bytesRead] = '\0';
-                printf("Received message: %s\n", buffer);
+                std::cout << "Received message: " << buffer << std::endl;
             }
             else if (bytesRead == 0)
             {
-                printf("Client disconnected.\n");
+                std::cout << "Client disconnected." << std::endl;
                 break;
             }
             else

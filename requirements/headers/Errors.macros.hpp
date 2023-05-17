@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------- */
-/*  File: ircserv.head.hpp                                                    */
-/*  Brief: IRC server header file                                             */
+/*  File: errors.macros.hpp                                                   */
+/*  Brief: errors macros header file                                          */
 /*  Authors:                                                                  */
 /*   - Mohamed Amine Naimi                                                    */
 /*   - Hssain Ait Kadir                                                       */
@@ -8,14 +8,9 @@
 /* -------------------------------------------------------------------------- */
 
 #pragma once
-#ifndef IRCSERV_HEAD_HPP
-# define IRCSERV_HEAD_HPP
+#ifndef ERRORS_MACROS_HPP
+# define ERRORS_MACROS_HPP
 
-/* ---------------------------------- INCLUDES ------------------------------ */
+/* ----------------------------------- DEFINES ------------------------------ */
 
-# include "headers/Libraries.includes.hpp"
-
-/* ---------------------------------- PROTOTYPES ---------------------------- */
-
-
-#endif // !IRCSERV_HEAD_HPP
+#endif // !ERRORS_MACROS_HPP

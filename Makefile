@@ -30,7 +30,8 @@ CC_FLAGS	:= -Wall -Wextra -Werror -std=c++98
 NAME		:= ircserv
 MAIN		:= requirements/ircserv.main.cpp
 HEADERS		:= requirements/ircserv.head.hpp \
-			requirements/srcs/IRCServer.class.hpp
+			requirements/srcs/IRCServer.class.hpp \
+			requirements/srcs/errors.macros.hpp
 
 SRCS_DIR := requirements/srcs/
 SRCS_LST := IRCServer.class.cpp
