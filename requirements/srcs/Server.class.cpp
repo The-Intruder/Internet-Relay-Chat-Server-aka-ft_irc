@@ -128,19 +128,10 @@ void Server::HandleConnections(size_t pfdsindex)
         std::string token;
         while(std::getline(stream , token, '\n'))
         {
-            // std::cout << "-------------  Debuging1 -------------:" << token << std::endl; 
             MS.clear();
-            std::string data = token;
-            MS.push_back(data.substr(0, data.find_first_of(" ")));
-            // for (std::size_t i = 0;i < MS.size();i++){
-            //     std::cout << "MS[" << i << "] = " << MS[i] << std::endl;
-            // }
-            if(data.find(" ") != std::string::npos)
-                MS.push_back(data.substr(data.find_first_of(" ") + 1));
-            // for (std::size_t i = 0;i < MS.size();i++){
-            //     std::cout << "MS[" << i << "] = " << MS[i] << std::endl;
-            // }
-            // std::cout << "-------------  Debuging2 -------------:" << data << std::endl; 
+            MS.push_back(token.substr(0, token.find_first_of(" ")));
+            if(token.find(" ") != std::string::npos)
+                MS.push_back(token.substr(token.find_first_of(" ") + 1));
             if(Authentication(pfdsindex) == true)
             {
                 // the client is authenticated to the server
@@ -313,7 +304,6 @@ void Server::getDateTime()
 
 void Server::executecommand(size_t pfdsindex)
 {
-    std::cout << "here:      "<<MS[1] << std::endl;
     if(MS[0] == "BOT" || MS[0] == "bot") // bot
         bot(pfdsindex);
     else if(MS[0] == "NICK" || MS[0] == "nick") // nick 
