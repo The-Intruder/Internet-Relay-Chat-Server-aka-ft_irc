@@ -49,7 +49,7 @@ TODO: fix getting the argument from 'abdellah part'
 
 void Server::AddChannel(std::string args){
 
-    std::cout << args << std::endl;
+    // std::cout << "---- this one: " << args << std::endl;
     parse_JOIN(args);
     if (this->ChannelsMap.find(args) == this->ChannelsMap.end()){
         IRCChannel chnl(args, "pass");

@@ -124,6 +124,7 @@ class Server
         std::vector<pollfd> pfds; // file descriptors to keep eyes on 
         std::map<int,Client>  ClientsMap; // clients map
         std::vector<std::string> MS; // mesaage splited by space
+        std::vector<std::string> MSATH; // mesaage splited by space for ATH phase
         std::string Servtimeinfo; // server created time
         /*---------------------- Hssain-Part ------------------ */
         std::map<std::string,IRCChannel>  ChannelsMap; // Channels map
