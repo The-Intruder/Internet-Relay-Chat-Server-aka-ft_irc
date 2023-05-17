@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/12 11:14:01 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/17 12:17:08 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ void Server::AcceptConnections()
 void Server::HandleConnections(size_t pfdsindex)
 {
     char buffer[MAX_INPUT + 1] = {0};
-    int valread = read(pfds[pfdsindex].fd, buffer, sizeof(buffer));
+    int valread = read(pfds[pfdsindex].fd, buffer, MAX_INPUT);
     std::string bufferobj = buffer;
     if(valread < 0)
         throw std::runtime_error("read failed");
@@ -124,11 +124,12 @@ void Server::HandleConnections(size_t pfdsindex)
         }
         else
             tmp.setbuffer(tmp.getbuffer() + bufferobj);        
-        char *cmd = std::strtok((char *)tmp.getbuffer().c_str(), "\n");
-        while(cmd != NULL)
+        std::stringstream stream(tmp.getbuffer());
+        std::string token;
+        while(std::getline(stream , token, '\n'))
         {
             MS.clear();
-            std::string data = cmd;
+            std::string data = token;
             MS.push_back(data.substr(0, data.find_first_of(" ")));
             if(data.find(" ") != std::string::npos)
                 MS.push_back(data.substr(data.find_first_of(" ") + 1));
@@ -145,9 +146,9 @@ void Server::HandleConnections(size_t pfdsindex)
                 //         writemessagetoclients(j, data + "\n");
                 // }
                 //--------------------------------------------------- broadcast
-            }
-            cmd = std::strtok(NULL, "\r\n");
+            }  
         }
+        token.clear();
         tmp.setbuffer("");
     }
 }

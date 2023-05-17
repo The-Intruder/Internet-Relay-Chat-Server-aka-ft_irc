@@ -29,6 +29,7 @@
  #include <sstream>
  #include "srcs/errors.responces.macros.hpp"
  #include <cstring>
+ #include <cstdlib>
 #include <time.h>
 #include <cstdlib>
 #include <sys/time.h>
