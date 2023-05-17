@@ -125,11 +125,11 @@ void Server::HandleConnections(size_t pfdsindex)
         else
             tmp.setbuffer(tmp.getbuffer() + bufferobj);        
         char *cmd = std::strtok((char *)tmp.getbuffer().c_str(), "\n");
-        // std::cout << "\n---------------------------------------------\n";
-        // std::cout << (char *)tmp.getbuffer().c_str() << "\n\n";
-        // std::cout << tmp.getbuffer() << "\n\n";
-        // std::cout << cmd << std::endl;
-        // std::cout << "\n---------------------------------------------\n";
+        std::cout << "\n---------------------------------------------\n";
+        std::cout << (char *)tmp.getbuffer().c_str() << "\n\n";
+        std::cout << tmp.getbuffer() << "\n\n";
+        std::cout << cmd << std::endl;
+        std::cout << "\n---------------------------------------------\n";
         while(cmd != NULL)
         {
             MS.clear();
