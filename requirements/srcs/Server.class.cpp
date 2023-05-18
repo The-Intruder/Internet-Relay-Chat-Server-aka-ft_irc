@@ -129,10 +129,9 @@ void Server::HandleConnections(size_t pfdsindex)
         while(std::getline(stream , token, '\n'))
         {
             MS.clear();
-            std::string data = token;
-            MS.push_back(data.substr(0, data.find_first_of(" ")));
-            if(data.find(" ") != std::string::npos)
-                MS.push_back(data.substr(data.find_first_of(" ") + 1));
+            MS.push_back(token.substr(0, token.find_first_of(" ")));
+            if(token.find(" ") != std::string::npos)
+                MS.push_back(token.substr(token.find_first_of(" ") + 1));
             if(Authentication(pfdsindex) == true)
             {
                 // the client is authenticated to the server
@@ -187,16 +186,16 @@ bool Server::Authentication(size_t pfdsindex)
 
 void    Server::checkpass(size_t pfdsindex, Client& client)
 {
-    if((MS[0] == "PASS" || MS[0] == "pass") && client.getVP() == false)
+    if((MSATH[0] == "PASS" || MSATH[0] == "pass") && client.getVP() == false)
     {
-        if(MS.size() < 2)
+        if(MSATH.size() < 2)
         {
-            ERR_NEEDMOREPARAMS(pfdsindex,MS[0]);
+            ERR_NEEDMOREPARAMS(pfdsindex,MSATH[0]);
         }
-        else if(MS[1] == PASSWORD)
+        else if(MSATH[1] == PASSWORD)
             client.setVP(true);
     }
-    else if((MS[0] == "PASS" || MS[0] == "pass" ) && client.getVP() == true && (pfds[pfdsindex].revents & POLLOUT))
+    else if((MSATH[0] == "PASS" || MSATH[0] == "pass" ) && client.getVP() == true && (pfds[pfdsindex].revents & POLLOUT))
     {
         ERR_ALREADYREGISTRED(pfdsindex);
     }
@@ -204,52 +203,52 @@ void    Server::checkpass(size_t pfdsindex, Client& client)
 
 void Server::checknick(size_t pfdsindex, Client& client)
 {
-    if((MS.size() < 2) && (MS[0] == "NICK" || MS[0] == "nick") && client.getVN() == false && client.getVP() == true)
+    if((MSATH.size() < 2) && (MSATH[0] == "NICK" || MSATH[0] == "nick") && client.getVN() == false && client.getVP() == true)
     {
         ERR_NONICKNAMEGIVEN(pfdsindex);
     }
-    else if((MS[0] == "NICK" || MS[0] == "nick") && client.getVN() == false && client.getVP() == true)
+    else if((MSATH[0] == "NICK" || MSATH[0] == "nick") && client.getVN() == false && client.getVP() == true)
     {
-        if((MS[1][0] > 'a' && MS[1][0] < 'z') || (MS[1][0] > 'A' && MS[1][0] < 'Z'))
+        if((MSATH[1][0] > 'a' && MSATH[1][0] < 'z') || (MSATH[1][0] > 'A' && MSATH[1][0] < 'Z'))
         {
             std::map<int, Client>::iterator it = ClientsMap.begin();
             while(it != ClientsMap.end())
             {
-                if(it->second.getNICKNAME() == MS[1])
+                if(it->second.getNICKNAME() == MSATH[1])
                     break;
                 it++;   
             }
             if(it != ClientsMap.end())
             {
-                ERR_NICKNAMEINUSE(pfdsindex, MS[1]);
+                ERR_NICKNAMEINUSE(pfdsindex, MSATH[1]);
             }
             else if(it == ClientsMap.end())
             {
-                client.setNICKNAME(MS[1]);
+                client.setNICKNAME(MSATH[1]);
                 client.setVN(true);
             }
         }
         else
         {
-            ERR_ERRONEUSNICKNAME(pfdsindex, MS[1]);
+            ERR_ERRONEUSNICKNAME(pfdsindex, MSATH[1]);
         }
     }
-    else if((MS[0] == "NICK" || MS[0] == "nick") && client.getVN() == true && client.getVP() == true)
-        client.setNICKNAME(MS[1]);
+    else if((MSATH[0] == "NICK" || MSATH[0] == "nick") && client.getVN() == true && client.getVP() == true)
+        client.setNICKNAME(MSATH[1]);
 }
 
 void Server::checkuser(size_t pfdsindex, Client& client)
 {
-    if((MS.size() < 5) && (MS[0] == "USER" || MS[0] == "user") && client.getVU() == false && client.getVP() == true && client.getVN() == true)
+    if((MSATH.size() < 5) && (MSATH[0] == "USER" || MSATH[0] == "user") && client.getVU() == false && client.getVP() == true && client.getVN() == true)
     {
-        ERR_NEEDMOREPARAMS(pfdsindex, MS[0]);
+        ERR_NEEDMOREPARAMS(pfdsindex, MSATH[0]);
     }
-    else if((MS[0] == "USER" || MS[0] == "user") && client.getVU() == false && client.getVP() == true && client.getVN() == true)
+    else if((MSATH[0] == "USER" || MSATH[0] == "user") && client.getVU() == false && client.getVP() == true && client.getVN() == true)
     {
         std::map<int, Client>::iterator it = ClientsMap.begin();
         while(it != ClientsMap.end())
         {
-            if(it->second.getUSERNAME() == MS[1])
+            if(it->second.getUSERNAME() == MSATH[1])
                 break;
             it++;
         }
@@ -259,8 +258,8 @@ void Server::checkuser(size_t pfdsindex, Client& client)
         }
         else if(it == ClientsMap.end())
         {
-            client.setUSERNAME(MS[1]);   
-            client.setREALNAME(MS[2]);
+            client.setUSERNAME(MSATH[1]);   
+            client.setREALNAME(MSATH[2]);
             client.setVU(true);
         }
     }
@@ -280,14 +279,15 @@ Server::~Server()
 
 void Server::splitargs()
 {
+    MSATH.clear();
     if(MS.size() > 1)
     {
+        MSATH.push_back(MS[0]);
         std::string tmp = MS[1];
-        MS.pop_back();
         std::istringstream iss(tmp);
         std::string substring;
         while (iss >> substring)
-            MS.push_back(substring);
+            MSATH.push_back(substring);
     }
 }
 
@@ -311,15 +311,15 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "MODE" || MS[0] == "mode") // mode
         std::cout << "MODE\n";
     else if(MS[0] == "QUIT" || MS[0] == "quit") // quit
-        std::cout << "QUIT\n"; 
+        std::cout << "QUIT\n";
     else if(MS[0] == "JOIN" || MS[0] == "join") // join
-        std::cout << "join\n";
+        this->AddChannel(MS[1]);
     else if(MS[0] == "PART" || MS[0] == "part") // part
-        std::cout << "part\n"; 
+        std::cout << "part\n";
     else if(MS[0] == "TOPIC" || MS[0] == "topic") // part 
-        std::cout << "topic\n"; 
+        std::cout << "topic\n";
     else if(MS[0] == "NAMES" || MS[0] == "names") // names
-        std::cout << "names\n"; 
+        std::cout << "names\n";
     else if(MS[0] == "INVITE" || MS[0] == "invite") // invite
         std::cout << "invite\n";
     else if(MS[0] == "KICK" || MS[0] == "kick") // kick
@@ -327,7 +327,7 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg") // privmsg
         std::cout << "privmsg\n";
     else if(MS[0] == "NOTICE" || MS[0] == "notice") // notice
-        std::cout << "notice\n"; 
+        std::cout << "notice\n";
     else // command not found
     {
         if(MS[0] != "PING" && MS[0] != "PONG") // ignore PING AND PONG requests from limechat

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.head.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: Abellakr, Hssain, Mohamed Amine            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/12 10:46:13 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/07 14:52:22 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,12 @@
  #include <cstring>
  #include <cstdlib>
 #include <time.h>
+#include <cstdlib>
 #include <sys/time.h>
 
-
+// error replies macros
+// #define ERR_NEEDMOREPARAMS 461
+// #define ERR_ALREADYREGISTRED 462
 
 class Client
 {
@@ -79,6 +82,38 @@ class Client
         void settime(long time);
 };
 
+class IRCChannel {
+    private:
+        std::map<int,Client>            _joinedUsers; // Users that joined specifec channel
+        std::map<int,Client>            _admins; // Operators/Admins of a specifec channel
+        std::string                     _channel_name;
+        std::string                     _channel_pass;
+        std::string                     _topic;
+        std::string                     _key;
+    public:
+        uint64_t                        _client_limit;
+        uint16_t                        _modes;
+
+    public:
+        IRCChannel(std::string channelName, std::string channelPass);
+        IRCChannel(IRCChannel const &src);
+        const IRCChannel &operator=(IRCChannel const &src);
+        ~IRCChannel();
+
+        bool        isPrivate() const;
+        bool        isSecret() const;
+        bool        isInviteOnly() const;
+        bool        isOnlyVoiceAndOps() const;
+        bool        isNoOutsideMessages() const;
+        bool        isOnlyOpsChangeTopic() const;
+
+        void setChannelName(const std::string &channelName);
+        std::string getChannelName() const;
+
+        uint64_t    getClientLimit() const;
+        void        setClientLimit(uint64_t _client_limit);
+};
+
 class Server
 {
     private:
@@ -89,7 +124,10 @@ class Server
         std::vector<pollfd> pfds; // file descriptors to keep eyes on 
         std::map<int,Client>  ClientsMap; // clients map
         std::vector<std::string> MS; // mesaage splited by space
+        std::vector<std::string> MSATH; // mesaage splited by space for ATH phase
         std::string Servtimeinfo; // server created time
+        /*---------------------- Hssain-Part ------------------ */
+        std::map<std::string,IRCChannel>  ChannelsMap; // Channels map
         std::string buffertmp; // this is for ignoring control D behavior 
  
     public:
@@ -101,16 +139,19 @@ class Server
         void SaveClients(int newsockfd, unsigned int IP); // save the connected client to the map of clients
 
         bool Authentication(size_t pfdsindex);
-        void checkpass(size_t pfdsindex, Client& client); 
-        void checknick(size_t pfdsindex, Client& client); 
-        void checkuser(size_t pfdsindex, Client& client); 
+        void checkpass(size_t pfdsindex, Client& client);
+        void checknick(size_t pfdsindex, Client& client);
+        void checkuser(size_t pfdsindex, Client& client);
         
         void writemessagetoclients(size_t pfdsindex, std::string message); // pfdsindex is the fd socket of the client to send data to *
         void splitargs();
         void getDateTime();
         long ft_gettime(void);
         void executecommand(size_t pfdsindex);
-        // commands 
+        // commands
         void bot(size_t pfdsindex);
+        /*---------------------- Hssain-Part ------------------ */
+        void AddChannel(std::string args);
+        void RemoveChannel();
 }; 
 #endif
