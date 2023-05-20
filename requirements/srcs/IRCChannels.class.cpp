@@ -104,3 +104,21 @@ void  IRCChannel::setClientLimit(uint64_t _client_limit) {
 }
 
 /* -------------------------------------------------------------------------- */
+
+void        IRCChannel::addClient(std::size_t fd, Client client){
+    std::map<int, Client>::iterator it = this->_joinedUsers.find(static_cast<int>(fd));
+    if (it == this->_joinedUsers.end())
+        this->_joinedUsers.insert(std::make_pair(fd, client));
+    else
+        std::cout << "Client already exist" << std::endl;
+}
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+void        IRCChannel::removeClient(int fd){
+    std::map<int, Client>::iterator it = this->_joinedUsers.find(fd);
+    if (it != this->_joinedUsers.end())
+        this->_joinedUsers.erase(it);
+}
+
+/* -------------------------------------------------------------------------- */

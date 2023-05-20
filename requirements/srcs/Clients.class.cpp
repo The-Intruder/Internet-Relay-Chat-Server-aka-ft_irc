@@ -23,6 +23,39 @@ Client::Client(int newsockfd, unsigned int IP)
     this->firstATH = false;
 }
 
+Client::Client(const Client& other) {
+        this->IP = other.IP;
+        this->NICKNAME = other.NICKNAME;
+        this->USERNAME = other.USERNAME;
+        this->REALNAME = other.REALNAME;
+        this->VP = other.VP;
+        this->VN = other.VN;
+        this->VU = other.VU;
+        this->Authenticated = other.Authenticated;
+        this->sockfd = other.sockfd;
+        this->firstATH = other.firstATH;
+        this->buffer = other.buffer;
+        this->connectedtime = other.connectedtime;
+}
+
+Client& Client::operator=(const Client& other) {
+    if (this != &other) {
+        this->IP = other.IP;
+        this->NICKNAME = other.NICKNAME;
+        this->USERNAME = other.USERNAME;
+        this->REALNAME = other.REALNAME;
+        this->VP = other.VP;
+        this->VN = other.VN;
+        this->VU = other.VU;
+        this->Authenticated = other.Authenticated;
+        this->sockfd = other.sockfd;
+        this->firstATH = other.firstATH;
+        this->buffer = other.buffer;
+        this->connectedtime = other.connectedtime;
+    }
+    return *this;
+}
+
 Client::~Client()
 {
     

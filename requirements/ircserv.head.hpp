@@ -20,16 +20,16 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/poll.h>
- #include <limits.h>
- #include <vector>
- #include <map>
- #include <arpa/inet.h>
- #include <utility>
- #include <string>
- #include <sstream>
- #include "srcs/errors.responces.macros.hpp"
- #include <cstring>
- #include <cstdlib>
+#include <limits.h>
+#include <vector>
+#include <map>
+#include <arpa/inet.h>
+#include <utility>
+#include <string>
+#include <sstream>
+#include "srcs/errors.responces.macros.hpp"
+#include <cstring>
+#include <cstdlib>
 #include <time.h>
 #include <cstdlib>
 #include <sys/time.h>
@@ -55,6 +55,8 @@ class Client
         long connectedtime;// time to connect to the server
     public:
         Client(int newsockfd, unsigned int IP);
+        Client(const Client& other);
+        Client& operator=(const Client& other);
         ~Client();
         __uint32_t getIP();
         bool getVP() const;
@@ -112,6 +114,8 @@ class IRCChannel {
 
         uint64_t    getClientLimit() const;
         void        setClientLimit(uint64_t _client_limit);
+        void        addClient(std::size_t fd, Client client);
+        void        removeClient(int fd);
 };
 
 class Server
@@ -123,7 +127,7 @@ class Server
         struct sockaddr_in ServAddr; // socket address of the server
         std::vector<pollfd> pfds; // file descriptors to keep eyes on 
         std::map<int,Client>  ClientsMap; // clients map
-        std::vector<std::string> MS; // mesaage splited by space
+        std::vector<std::string> MS; // message splited by space
         std::vector<std::string> MSATH; // mesaage splited by space for ATH phase
         std::string Servtimeinfo; // server created time
         /*---------------------- Hssain-Part ------------------ */
@@ -151,7 +155,8 @@ class Server
         // commands
         void bot(size_t pfdsindex);
         /*---------------------- Hssain-Part ------------------ */
-        void AddChannel(std::string args);
+        void HandleJOIN(size_t pfdsindex, std::string args);
+        void addChannel(size_t pfdsindex, std::string chName, std::string chPass);
         void RemoveChannel();
 }; 
 #endif
