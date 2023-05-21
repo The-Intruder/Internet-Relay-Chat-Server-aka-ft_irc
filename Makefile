@@ -24,7 +24,7 @@ export TITLE
 # ---------------------------------- Variables ------------------------------- #
 
 CC			:= c++
-CC_FLAGS	:= -Wall -Wextra -Werror -std=c++98 #-g -fsanitize=address
+CC_FLAGS	:= -Wall -Wextra -Werror -std=c++98 #-fsanitize=address -g
 
 NAME		:= ircserv
 MAIN		:= requirements/ircserv.main.cpp
