@@ -25,5 +25,19 @@
 #define ERR_CMDNOTFOUND(pfdsindex){std::string message = ":IrcTheThreeMusketeers ERROR :command not found\n";writemessagetoclients(pfdsindex, message);}
 #define ERR_FLAGNOTFOUND(pfdsindex){std::string message = ":IrcTheThreeMusketeers ERROR :flag not found use -help\n";writemessagetoclients(pfdsindex, message);}
 
+// JOIN ERRS and RPL
+
+/*
+           ERR_NEEDMOREPARAMS              ERR_BANNEDFROMCHAN
+           ERR_INVITEONLYCHAN              ERR_BADCHANNELKEY
+           ERR_CHANNELISFULL               ERR_BADCHANMASK
+           ERR_NOSUCHCHANNEL               ERR_TOOMANYCHANNELS
+           RPL_TOPIC
+*/
+
+#define ERR_INVALIDCHNLNAME(fd, chName){std::string message = ":IrcTheThreeMusketeers ERROR :invalid channel name: " + chName + "\n";writemessagetoclients(fd, message);}
+#define ERR_INVITEONLYCHAN(fd, chName){std::string message = ":IrcTheThreeMusketeers 473 <" + chName + "> :Cannot join channel (+i)\n";writemessagetoclients(fd, message);}
+#define ERR_BADCHANNELKEY(fd, chName){std::string message = ":IrcTheThreeMusketeers 475 <" + chName + "> :Cannot join channel (+k)\n";writemessagetoclients(fd, message);}
+#define ERR_CHANNELISFULL(fd, chName){std::string message = ":IrcTheThreeMusketeers 471 <" + chName + "> :Cannot join channel (+l)\n";writemessagetoclients(fd, message);}
 
 #endif

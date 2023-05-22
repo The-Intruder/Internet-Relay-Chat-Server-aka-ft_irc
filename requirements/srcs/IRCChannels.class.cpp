@@ -17,6 +17,8 @@
 IRCChannel::IRCChannel(std::string channelName, std::string channelPass){
     this->_channel_name = channelName;
     this->_channel_pass = channelPass;
+    this->_client_limit = 50;
+    this->_modes = 0;
 }
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
@@ -28,7 +30,6 @@ IRCChannel::IRCChannel(IRCChannel const &src){
     _channel_name = src._channel_name;
     _channel_pass = src._channel_pass;
     _topic = src._topic;
-    _key = src._key;
     _client_limit = src._client_limit;
     _modes = src._modes;
 } 
@@ -43,7 +44,6 @@ const IRCChannel &IRCChannel::operator=(IRCChannel const &src){
         _channel_name = src._channel_name;
         _channel_pass = src._channel_pass;
         _topic = src._topic;
-        _key = src._key;
         _client_limit = src._client_limit;
         _modes = src._modes;
     }
@@ -93,6 +93,17 @@ bool  IRCChannel::isOnlyOpsChangeTopic() const {
 
 /* -------------------------------------------------------------------------- */
 
+void IRCChannel::setChannelName(const std::string &channelName){
+    this->_channel_name = channelName;;
+}
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+std::string IRCChannel::getChannelName() const{
+    return this->_channel_name;
+}
+
+
 uint64_t  IRCChannel::getClientLimit() const {
     return (this->_client_limit);
 }
@@ -103,22 +114,35 @@ void  IRCChannel::setClientLimit(uint64_t _client_limit) {
     this->_client_limit = _client_limit;
 }
 
-/* -------------------------------------------------------------------------- */
 
-void        IRCChannel::addClient(std::size_t fd, Client client){
-    std::map<int, Client>::iterator it = this->_joinedUsers.find(static_cast<int>(fd));
-    if (it == this->_joinedUsers.end())
-        this->_joinedUsers.insert(std::make_pair(fd, client));
-    else
-        std::cout << "Client already exist" << std::endl;
+std::string IRCChannel::getChannelPass() const{
+    return this->_channel_pass;
 }
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
-void        IRCChannel::removeClient(int fd){
-    std::map<int, Client>::iterator it = this->_joinedUsers.find(fd);
-    if (it != this->_joinedUsers.end())
-        this->_joinedUsers.erase(it);
+void        IRCChannel::setClientPass(std::string channel_pass){
+    this->_channel_pass = channel_pass;
+}
+
+/* -------------------------------------------------------------------------- */\
+
+void    IRCChannel::joinChannel(Client &client, std::string &chPass, int fd){
+    if (this->getChannelPass() != chPass){
+        ERR_BADCHANNELKEY(fd, this->getChannelName());
+    } else if (this->isInviteOnly()){
+        ERR_INVITEONLYCHAN(fd, this->getChannelName());
+    }else if (this->_joinedUsers.size() >= this->getClientLimit()){
+        ERR_CHANNELISFULL(fd, this->getChannelName());
+    } else if (this->_joinedUsers.find(fd) == this->_joinedUsers.end()){
+        this->_joinedUsers.insert(std::make_pair(fd, client));
+        std::cout << client.getNICKNAME() << " joined " << this->getChannelName() << std::endl;
+    }
+}
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+void    IRCChannel::addAdmin(int fd){
+    this->_admins.insert(std::make_pair(fd, this->_joinedUsers.find(fd)->second));
 }
 
 /* -------------------------------------------------------------------------- */

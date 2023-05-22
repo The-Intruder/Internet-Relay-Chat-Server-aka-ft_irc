@@ -88,13 +88,13 @@ class IRCChannel {
     private:
         std::map<int,Client>            _joinedUsers; // Users that joined specifec channel
         std::map<int,Client>            _admins; // Operators/Admins of a specifec channel
+        std::map<int,Client>            _bannedUsers; // Banned Users
         std::string                     _channel_name;
         std::string                     _channel_pass;
         std::string                     _topic;
-        std::string                     _key;
     public:
         uint64_t                        _client_limit;
-        uint16_t                        _modes;
+        uint32_t                        _modes;
 
     public:
         IRCChannel(std::string channelName, std::string channelPass);
@@ -114,8 +114,10 @@ class IRCChannel {
 
         uint64_t    getClientLimit() const;
         void        setClientLimit(uint64_t _client_limit);
-        void        addClient(std::size_t fd, Client client);
-        void        removeClient(int fd);
+        std::string getChannelPass() const;
+        void        setClientPass(std::string channel_pass);
+        void        addAdmin(int fd);
+        void        joinChannel(Client &client, std::string &chPass, int fd);
 };
 
 class Server
@@ -130,9 +132,9 @@ class Server
         std::vector<std::string> MS; // message splited by space
         std::vector<std::string> MSATH; // mesaage splited by space for ATH phase
         std::string Servtimeinfo; // server created time
+        std::string buffertmp; // this is for ignoring control D behavior 
         /*---------------------- Hssain-Part ------------------ */
         std::map<std::string,IRCChannel>  ChannelsMap; // Channels map
-        std::string buffertmp; // this is for ignoring control D behavior 
  
     public:
         Server(int PORT, std::string PASSTWORD);
@@ -156,7 +158,11 @@ class Server
         void bot(size_t pfdsindex);
         /*---------------------- Hssain-Part ------------------ */
         void HandleJOIN(size_t pfdsindex, std::string args);
-        void addChannel(size_t pfdsindex, std::string chName, std::string chPass);
+        void addChannel(int fd, std::string chName, std::string chPass);
         void RemoveChannel();
-}; 
+};
+
+/* -------------------------------------------------------------------------- */
+void    writemessagetoclients(int fd, std::string message);
+
 #endif
