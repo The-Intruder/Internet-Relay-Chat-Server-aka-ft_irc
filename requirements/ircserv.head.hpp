@@ -116,8 +116,11 @@ class IRCChannel {
         void        setClientLimit(uint64_t _client_limit);
         std::string getChannelPass() const;
         void        setClientPass(std::string channel_pass);
+        std::string getChannelTopic() const;
         void        addAdmin(int fd);
         void        joinChannel(Client &client, std::string &chPass, int fd);
+        void        notifyUsers(int fd);
+        void        welcomeUser(int fd);
 };
 
 class Server

@@ -52,14 +52,6 @@ parse_JOIN(std::string args){
         }else
             keys = parseLine(line);
     }
-    // for testing start
-    for(std::size_t i = 0; i < channels.size(); i++){
-        std::cout << "CHannel: " << channels[i] << std::endl;
-    }
-    for(std::size_t i = 0; i < keys.size(); i++){
-        std::cout << "Keys: " << keys[i] << std::endl;
-    }
-    // for testing end
     if (channels.size() > 0 && keys.size() > 0)
         return std::make_pair(channels, keys);
     else
@@ -84,18 +76,24 @@ void Server::RemoveChannel(){
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
 void Server::HandleJOIN(size_t pfdsindex, std::string args){
-    std::pair<std::vector<std::string>, std::vector<std::string> > parsedArgs = \
-    parse_JOIN(args);
-    for (std::size_t i=0;i<parsedArgs.first.size();i++){
-        std::string chPass = i < parsedArgs.second.size() ? parsedArgs.second[i] : "";
-        std::map<std::string, IRCChannel>::iterator channel = this->ChannelsMap.find(parsedArgs.first[i]);
-        if (checkChannelName(parsedArgs.first[i])){
-            ERR_INVALIDCHNLNAME(this->pfds[pfdsindex].fd, parsedArgs.first[i]);
-        } else if (channel == this->ChannelsMap.end()){
-            addChannel(this->pfds[pfdsindex].fd, parsedArgs.first[i], chPass);
-            std::cout << "channel added!" << std::endl;
-        } else if (channel != this->ChannelsMap.end()) {
-            channel->second.joinChannel(this->ClientsMap.find(this->pfds[pfdsindex].fd)->second, chPass, this->pfds[pfdsindex].fd);
+    if (args.empty()) {
+        std::string cmd = "JOIN";
+        ERR_NEEDMOREPARAMS(pfdsindex, cmd);
+    } else if(args.size() < 2 ) {
+        ERR_INVALIDCHNLNAME(pfdsindex, args);
+    } else {
+        std::pair<std::vector<std::string>, std::vector<std::string> > parsedArgs = \
+        parse_JOIN(args);
+        for (std::size_t i=0;i<parsedArgs.first.size();i++){
+            std::string chPass = i < parsedArgs.second.size() ? parsedArgs.second[i] : "";
+            std::map<std::string, IRCChannel>::iterator channel = this->ChannelsMap.find(parsedArgs.first[i]);
+            if (checkChannelName(parsedArgs.first[i])){
+                ERR_INVALIDCHNLNAME(this->pfds[pfdsindex].fd, parsedArgs.first[i]);
+            } else if (channel == this->ChannelsMap.end()){
+                addChannel(this->pfds[pfdsindex].fd, parsedArgs.first[i], chPass);
+            } else if (channel != this->ChannelsMap.end()) {
+                channel->second.joinChannel(this->ClientsMap.find(this->pfds[pfdsindex].fd)->second, chPass, this->pfds[pfdsindex].fd);
+            }
         }
     }
 }

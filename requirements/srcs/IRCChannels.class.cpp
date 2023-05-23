@@ -19,10 +19,10 @@ IRCChannel::IRCChannel(std::string channelName, std::string channelPass){
     this->_channel_pass = channelPass;
     this->_client_limit = 50;
     this->_modes = 0;
+    this->_topic = "";
 }
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
-
 
 IRCChannel::IRCChannel(IRCChannel const &src){
     _joinedUsers = src._joinedUsers;
@@ -35,7 +35,6 @@ IRCChannel::IRCChannel(IRCChannel const &src){
 } 
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
-
 
 const IRCChannel &IRCChannel::operator=(IRCChannel const &src){
     if (this != &src) {
@@ -125,6 +124,46 @@ void        IRCChannel::setClientPass(std::string channel_pass){
     this->_channel_pass = channel_pass;
 }
 
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+std::string IRCChannel::getChannelTopic() const{
+    return this->_topic;
+}
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+void IRCChannel::notifyUsers(int fd){
+
+    std::string notifyusers = ":" + this->_joinedUsers.find(fd)->second.getNICKNAME() \
+    + "!" + this->_joinedUsers.find(fd)->second.getUSERNAME() + "@localhost JOIN " \
+    + this->getChannelName() + "\n";
+    for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
+        if (i->first != fd){
+            writemessagetoclients(i->first, notifyusers);
+        }
+    }
+}
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+void IRCChannel::welcomeUser(int fd){
+
+// :irc.server.com 353 john = #example :@opUser +voiceUser regularUser
+    if (this->_joinedUsers.size() > 1){
+        std::string welcome = ":IrcTheThreeMusketeers 353 " + \
+        this->_joinedUsers.find(fd)->second.getNICKNAME() + " = " + this->getChannelName() + \
+        ":";
+        for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
+            if (i->first != fd){
+                welcome += i->second.getNICKNAME() + " ";
+            }
+        }
+        welcome += "\n";
+        writemessagetoclients(fd, welcome);
+    }
+}
+
+
 /* -------------------------------------------------------------------------- */\
 
 void    IRCChannel::joinChannel(Client &client, std::string &chPass, int fd){
@@ -136,7 +175,12 @@ void    IRCChannel::joinChannel(Client &client, std::string &chPass, int fd){
         ERR_CHANNELISFULL(fd, this->getChannelName());
     } else if (this->_joinedUsers.find(fd) == this->_joinedUsers.end()){
         this->_joinedUsers.insert(std::make_pair(fd, client));
-        std::cout << client.getNICKNAME() << " joined " << this->getChannelName() << std::endl;
+        if (this->getChannelTopic().empty()){
+            RPL_NOTOPIC(fd, this->getChannelName());
+        } else
+            RPL_TOPIC(fd, this->getChannelName(), this->getChannelTopic());
+        notifyUsers(fd);
+        welcomeUser(fd);
     }
 }
 
