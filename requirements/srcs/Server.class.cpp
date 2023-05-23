@@ -34,7 +34,6 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
                 HandleConnections(i);
                 if(tmp.getAuthenticated() == true)
                     tmp.setfirstATH(true);
-                
             }
         }
     }
@@ -132,20 +131,10 @@ void Server::HandleConnections(size_t pfdsindex)
             MS.push_back(token.substr(0, token.find_first_of(" ")));
             if(token.find(" ") != std::string::npos)
                 MS.push_back(token.substr(token.find_first_of(" ") + 1));
-            if(Authentication(pfdsindex) == true)
-            {
-                // the client is authenticated to the server
-                // here I will parse the commads
-                if(tmp.getfirstATH() == true)
-                    executecommand(pfdsindex);
-                //------------------------------------------------ broadcast
-                // for(size_t j = 1; j < pfds.size(); j++)
-                // {
-                //     if((pfds[j].revents & POLLOUT) && (j != pfdsindex) && tmp.getfirstATH() == true)
-                //         writemessagetoclients(j, data + "\n");
-                // }
-                //--------------------------------------------------- broadcast
-            }  
+            if(tmp.getfirstATH() == true)
+                executecommand(pfdsindex);
+            else if(Authentication(pfdsindex) == true)
+                ;
         }
         token.clear();
         tmp.setbuffer("");
@@ -325,7 +314,7 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "KICK" || MS[0] == "kick") // kick
         std::cout << "kick\n";
     else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg") // privmsg
-        std::cout << "privmsg\n";
+        std::cout << "privmsgmk\n";
     else if(MS[0] == "NOTICE" || MS[0] == "notice") // notice
         std::cout << "notice\n";
     else // command not found
