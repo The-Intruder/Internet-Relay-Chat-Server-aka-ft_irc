@@ -135,6 +135,7 @@ void Server::HandleConnections(size_t pfdsindex)
                 executecommand(pfdsindex);
             else if(Authentication(pfdsindex) == true)
                 ;
+            // test
         }
         token.clear();
         tmp.setbuffer("");
