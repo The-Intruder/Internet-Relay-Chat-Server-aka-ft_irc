@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/25 11:29:23 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/25 16:39:06 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,9 +270,9 @@ Server::~Server()
 void Server::splitargs()
 {
     MSATH.clear();
+    MSATH.push_back(MS[0]);
     if(MS.size() > 1)
     {
-        MSATH.push_back(MS[0]);
         std::string tmp = MS[1];
         std::istringstream iss(tmp);
         std::string substring;
