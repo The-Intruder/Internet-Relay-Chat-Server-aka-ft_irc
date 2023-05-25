@@ -58,7 +58,7 @@ parse_JOIN(std::string args){
         return std::make_pair(channels, std::vector<std::string>());
 }
 
-/* -------------------------------------------------------------------------- */\
+/* -------------------------------------------------------------------------- */
 
 void    Server::addChannel(int fd, std::string chName, std::string chPass){
     IRCChannel channel(chName, chPass);

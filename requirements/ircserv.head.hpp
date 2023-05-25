@@ -162,6 +162,7 @@ class Server
         /*---------------------- Hssain-Part ------------------ */
         void HandleJOIN(size_t pfdsindex, std::string args);
         void addChannel(int fd, std::string chName, std::string chPass);
+        void HandlePRIVMSG(size_t pfdsindex, std::string args);
         void RemoveChannel();
 };
 

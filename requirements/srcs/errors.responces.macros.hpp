@@ -42,4 +42,8 @@
 #define RPL_TOPIC(fd, chName, topic){std::string message = ":IrcTheThreeMusketeers 332 " + chName + " : " + topic + "\n"; writemessagetoclients(fd, message);}
 #define RPL_NOTOPIC(fd, chName){std::string message = ":IrcTheThreeMusketeers 331 " + chName + " : No topic is set\n"; writemessagetoclients(fd, message);}
 
+#define ERR_NORECIPIENT(fd){std::string message = ":IrcTheThreeMusketeers 411 Hssain :No recipient given (PRIVMSG)\n";writemessagetoclients(fd, message);}
+#define ERR_NOTEXTTOSEND(fd){std::string message = ":IrcTheThreeMusketeers 412 Hssain :No text to send\n";writemessagetoclients(fd, message);}
+
+
 #endif

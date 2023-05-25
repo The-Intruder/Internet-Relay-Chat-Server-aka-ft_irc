@@ -124,7 +124,7 @@ void Server::HandleConnections(size_t pfdsindex)
         else
             tmp.setbuffer(tmp.getbuffer() + bufferobj);        
         std::stringstream stream(tmp.getbuffer());
-        std::string token;
+        std::string token;    
         while(std::getline(stream , token, '\n'))
         {
             MS.clear();
@@ -135,7 +135,6 @@ void Server::HandleConnections(size_t pfdsindex)
                 executecommand(pfdsindex);
             else if(Authentication(pfdsindex) == true)
                 ;
-            // test
         }
         token.clear();
         tmp.setbuffer("");
@@ -315,7 +314,7 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "KICK" || MS[0] == "kick") // kick
         std::cout << "kick\n";
     else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg") // privmsg
-        std::cout << "privmsgmk\n";
+        this->HandlePRIVMSG(pfdsindex, MS[1]);
     else if(MS[0] == "NOTICE" || MS[0] == "notice") // notice
         std::cout << "notice\n";
     else // command not found
@@ -333,3 +332,6 @@ long	Server::ft_gettime(void)
 	gettimeofday(&current_time, NULL);
 	return (current_time.tv_sec);
 }
+
+
+// and abort ocurres when I disconnect a user from limechat
