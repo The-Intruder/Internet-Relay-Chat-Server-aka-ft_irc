@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/17 13:23:44 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/25 10:08:08 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,10 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
                 AcceptConnections();
             else if(pfds[i].revents & POLLIN)
             {
+                HandleConnections(i);
                 std::map<int,Client>::iterator it = ClientsMap.find(pfds[i].fd);
                 Client& tmp = it->second;
-                HandleConnections(i);
-                if(tmp.getAuthenticated() == true)
+                if(it != ClientsMap.end() && tmp.getAuthenticated() == true)
                     tmp.setfirstATH(true);
             }
         }
