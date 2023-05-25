@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/25 10:08:08 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/05/25 11:29:23 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,7 +199,7 @@ void Server::checknick(size_t pfdsindex, Client& client)
     }
     else if((MSATH[0] == "NICK" || MSATH[0] == "nick") && client.getVN() == false && client.getVP() == true)
     {
-        if((MSATH[1][0] > 'a' && MSATH[1][0] < 'z') || (MSATH[1][0] > 'A' && MSATH[1][0] < 'Z'))
+        if((MSATH[1][0] >='a' && MSATH[1][0] <= 'z') || (MSATH[1][0] >= 'A' && MSATH[1][0] <= 'Z'))
         {
             std::map<int, Client>::iterator it = ClientsMap.begin();
             while(it != ClientsMap.end())
