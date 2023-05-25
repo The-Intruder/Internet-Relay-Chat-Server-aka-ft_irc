@@ -25,16 +25,14 @@ export TITLE
 # ---------------------------------- Variables ------------------------------- #
 
 CC			:= c++
-CC_FLAGS	:= -Wall -Wextra -Werror -std=c++98
+CC_FLAGS	:= -Wall -Wextra -Werror -std=c++98  -fsanitize=address -static-libsan -g
 
 NAME		:= ircserv
 MAIN		:= requirements/ircserv.main.cpp
-HEADERS		:= requirements/ircserv.head.hpp \
-			requirements/srcs/IRCServer.class.hpp \
-			requirements/srcs/errors.macros.hpp
+HEADER		:= requirements/ircserv.head.hpp
 
 SRCS_DIR := requirements/srcs/
-SRCS_LST := IRCServer.class.cpp
+SRCS_LST := Server.class.cpp Clients.class.cpp  Channels.class.cpp handdle_JOIN.cpp Bot.cpp helper.functions.cpp
 SRCS := ${addprefix ${SRCS_DIR}, ${SRCS_LST}}
 
 OBJS_DIR := requirements/objs/
@@ -43,31 +41,29 @@ OBJS := ${addprefix ${OBJS_DIR}, ${OBJS_LST}}
 
 # ---------------------------------- Rules ----------------------------------- #
 
-.PHONY: all clean fclean re title
-
 all: title ${NAME}
 
-${NAME}: ${OBJS_DIR} ${OBJS} ${HEADERS} ${MAIN}
+${NAME}: ${OBJS_DIR} ${OBJS} ${HEADER} ${MAIN} 
 	@${CC} ${CC_FLAGS} ${MAIN} ${OBJS} -o ${NAME}
-	@echo "${GRN}Compiled [${GRA}${NAME}${GRN}] Successfully!${NNN}"
+	@echo "${GRN}Compiled [${NAME}] Successfully!${NNN}"
 
-${OBJS_DIR}%.obj: ${SRCS_DIR}%.cpp ${HEADERS}
+${OBJS_DIR}%.obj: ${SRCS_DIR}%.cpp ${HEADER}
 	@${CC} ${CC_FLAGS} -c $< -o $@
-	@echo "${BLU}Compiled${GRA} $< ${BLU}Successfully!${NNN}"
+	@echo "${BLU}Compiled $< Successfully!${NNN}"
 
 ${OBJS_DIR}:
 	@mkdir ${OBJS_DIR}
-	@echo "${BLU}Created [${GRA}${OBJS_DIR}${BLU}] Successfully!${NNN}"
-
 clean:
 	@rm -rf ${OBJS_DIR}
-	@echo "${RED}Removed [${GRA}${OBJS_DIR}${RED}] Successfully!${NNN}"
+	@echo "${RED}Removed [${OBJS_DIR}] Successfully!${NNN}"
 
 fclean: clean
 	@rm -f ${NAME}
-	@echo "${RED}Removed [${GRA}${NAME}${RED}] Successfully!${NNN}"
+	@echo "${RED}Removed [${NAME}] Successfully!${NNN}"
 
 re: fclean all
+
+.PHONY: all clean fclean re title
 
 title:
 	@clear

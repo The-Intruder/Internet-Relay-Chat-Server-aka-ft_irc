@@ -25,15 +25,5 @@ typedef struct s_parsedModeCommand
 }   t_parsedModeCommand;
 
 void                    executeModeCommand(Server &server, Client &client, std::string command);
-t_parsedModeCommand     &parseModeCommand(std::string command);
-void                    setOperatorMode(Channel &channel, Client &client, bool add);
-void                    setVoiceMode(Channel &channel, Client &client, bool add);
-void                    setPrivateMode(Channel &channel, bool add);
-void                    setSecretMode(Channel &channel, bool add);
-void                    setInviteOnlyMode(Channel &channel, bool add);
-void                    setVoiceAndOpsOnlyMode(Channel &channel, bool add);
-void                    setNoOutsideMessagesMode(Channel &channel, bool add);
-void                    setOnlyOpsChangeTopicMode(Channel &channel, bool add);
-void                    setClientLimitMode(Channel &channel, uint64_t limit, bool add);
 
 #endif // !IRCMODE_SOURCE_HPP

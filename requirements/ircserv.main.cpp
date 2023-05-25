@@ -1,15 +1,17 @@
-/* -------------------------------------------------------------------------- */
-/*  File: ircserv.main.cpp                                                    */
-/*  Brief: IRC server main file                                               */
-/*  Authors:                                                                  */
-/*   - Mohamed Amine Naimi                                                    */
-/*   - Hssain Ait Kadir                                                       */
-/*   - Abdellah Bellakrim                                                     */
-/* -------------------------------------------------------------------------- */
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ircserv.main.cpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/04/29 10:54:49 by abellakr          #+#    #+#             */
+/*   Updated: 2023/05/11 22:08:16 by abellakr         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "ircserv.head.hpp"
 
-/* -------------------------------------------------------------------------- */
 
 static bool port_is_valid(const std::string &port)
 {
@@ -19,128 +21,57 @@ static bool port_is_valid(const std::string &port)
     return true;
 }
 
-/* -------------------------------------------------------------------------- */
-
-static int check_for_errors(int argc, char **argv)
+static int check_for_errors(int ac, char **av)
 {
-    if (argc != 3)
+    if (ac != 3)
     {
         std::cerr << "Error: invalid arguments count" << std::endl;
-        std::cout << "Usage: " << argv[0] << " <port> <password>" << std::endl;
+        std::cerr << "Usage: " << av[0] << " <port> <password>" << std::endl;
         return EXIT_FAILURE;
     }
-    else if (port_is_valid(argv[1]) == false)
+    else if (port_is_valid(av[1]) == false)
     {
         std::cerr << "Error: invalid port number" << std::endl;
-        std::cout << "Usage: " << argv[0] << " <port> <password>" << std::endl;
+        std::cerr << "Usage: " << av[0] << " <port> <password>" << std::endl;
         return EXIT_FAILURE;
     }
-    else if (std::string(argv[2]).size() < 8)
+    else if (std::string(av[2]).size() < 8)
     {
         std::cerr << "Error: password must be at least 8 characters long" << std::endl;
-        std::cout << "Usage: " << argv[0] << " <port> <password>" << std::endl;
+        std::cerr << "Usage: " << av[0] << " <port> <password>" << std::endl;
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
 }
 
-/* -------------------------------------------------------------------------- */
-
-int main(int argc, char **argv)
+int main(int ac, char **av)
 {
-    if (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0))
-    {
-        std::cout << "Usage: " << argv[0] << " <port> <password>" << std::endl;
-        return EXIT_SUCCESS;
-    }
-    else if (check_for_errors(argc, argv) == EXIT_FAILURE)
-        return EXIT_FAILURE;
-
-    /* ---------------------------- Parse Data ------------------------------ */
-
-    IRCServer ircserv(argv[2], std::stoi(argv[1]));
-    std::cout << "Server password: " << ircserv.get_server_pass() << std::endl;
-    std::cout << "Server port    : " << ircserv.get_server_port() << std::endl;
-
-    /* --------------------------- Create Socket ---------------------------- */
-
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd == -1)
-    {
-        std::cerr << "Failed to create socket" << std::endl;
-        return EXIT_FAILURE;
-    }
-    std::cout << "Socket created successfully" << std::endl;
-
-    /* ---------------------------- Bind Socket ----------------------------- */
-
-    sockaddr_in serverAddress;
-    std::memset(&serverAddress, 0, sizeof(serverAddress));
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(ircserv.get_server_port());
-    serverAddress.sin_addr.s_addr = INADDR_ANY;
-    if (bind(sockfd, reinterpret_cast<struct sockaddr *>(&serverAddress), sizeof(serverAddress)) == -1)
-    {
-        std::cerr << "Failed to bind socket" << std::endl;
-        return EXIT_FAILURE;
-    }
-    std::cout << "Socket bound successfully" << std::endl;
-
-    /* ------------------------- Listen for connect. ------------------------ */
-
-    if (listen(sockfd, 5) < 0)
-    {
-        std::cerr << "Failed to listen on socket" << std::endl;
-        return EXIT_FAILURE;
-    }
-    std::cout << "Listening for incoming connections..." << std::endl;
-
-    /* --------------------------- Accept connect. -------------------------- */
-
-    while (true)
-    {
-        struct sockaddr_in clientAddr;
-        socklen_t clientAddrLen = sizeof(clientAddr);
-
-        int clientSockfd = accept(sockfd, (struct sockaddr *)&clientAddr, &clientAddrLen);
-        if (clientSockfd < 0)
+    try{
+        if (ac == 2 && (strcmp(av[1], "-h") == 0 || strcmp(av[1], "--help") == 0))
         {
-            std::cerr << "Failed to accept connection" << std::endl;
-            continue;
+            std::cout << "Usage: " << av[0] << " <port> <password>" << std::endl;
+            return EXIT_SUCCESS;
         }
-        std::cout << "-----------------------------------------------" << std::endl;
-        std::cout << "Accepted a connection from: " << inet_ntoa(clientAddr.sin_addr) << std::endl;
-        std::cout << "Client socket: " << clientSockfd << std::endl;
-        std::cout << "Waiting for client to send data..." << std::endl;
-        std::cout << "-----------------------------------------------" << std::endl;
-
-        /* --------------------- Handle Client request ---------------------- */
-
-        while (true)
-        {
-            char buffer[1024];
-            int bytesRead = recv(clientSockfd, buffer, sizeof(buffer), 0);
-
-            if (bytesRead > 0)
-            {
-                buffer[bytesRead] = '\0';
-                std::cout << "Received message: " << buffer << std::endl;
-            }
-            else if (bytesRead == 0)
-            {
-                std::cout << "Client disconnected." << std::endl;
-                break;
-            }
-            else
-            {
-                perror("recv");
-                break;
-            }
-        }
-        close(clientSockfd);
+        else if (check_for_errors(ac, av) == EXIT_FAILURE)
+            throw std::invalid_argument("error: invalid argument");
+        else
+            Server ircserv(std::atoi(av[1]), av[2]);
+        
+    }
+    catch(std::exception &e)
+    {
+        std::cout << e.what() << std::endl;
     }
 
-    /* ---------------------------------------------------------------------- */
-
-    return EXIT_SUCCESS;
+    // system("leaks ircserv"); // check for leaks
 }
+
+
+// TODO:
+// bot  
+// check ftp 
+// add ideas for bot 
+// handle ctrnl d 
+// balssii every \r\n b \n 
+// check wach ster kaml khen
+// parsi
