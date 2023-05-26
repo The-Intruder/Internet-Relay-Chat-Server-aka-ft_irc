@@ -294,7 +294,7 @@ void Server::splitargs()
 void Server::getDateTime()
 {
     char ServTime[80];
-   time_t RawTime;
+    time_t RawTime;
    struct tm* TimeInfos;
    time(&RawTime);
    TimeInfos = localtime(&RawTime);
@@ -345,26 +345,3 @@ long	Server::ft_gettime(void)
 }
 
 /* ************************************************************************** */
-
-int     &Server::getClient(std::string nickname)
-{
-    std::map<int, Client>::iterator it = ClientsMap.begin();
-    while(it != ClientsMap.end())
-    {
-        if(it->second.getNICKNAME() == nickname)
-            break;
-        it++;
-    }
-    return (*(it->first));
-}
-
-/*  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  * */
-
-std::pair<std::string,Channel>   &getChannel(std::string channelName)
-{
-    std::map<std::string, Channel>::iterator it = myMap.find(keyToFind);
-
-    if (it == myMap.end())
-        throw std::runtime_error("channel not found");
-    return (*it);
-}

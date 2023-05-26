@@ -9,7 +9,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-void    executeModeCommand(Server &server, std::string command)
+void    executeModeCommand(std::string command)
 {
     t_parsedModeCommand parsedCommand = parseModeCommand(command);
     bool                add;
@@ -20,7 +20,7 @@ void    executeModeCommand(Server &server, std::string command)
         for (size_t i = 1; i < (*it).size(); i++)
         {
             if (*it[1] == 'o')
-                setOperator(server, add, parsedCommand);
+                setOperator(this, add, parsedCommand);
             else if (*it[1] == 'v')
                 ;
             else if (*it[1] == 'p')
@@ -43,24 +43,59 @@ void    executeModeCommand(Server &server, std::string command)
 
 /* -------------------------------------------------------------------------- */
 
-static void    setOperator(Server &server, bool add, t_parsedModeCommand &parsedCommand)
+static std::pair<int, Client>     &getClient(Server *this, std::string nickname)
 {
-    std::pair<int,Client>   client = server.getClient(parameter);
-    std::map<int,Client>    operators = channel.getOperators();
-    Channel                 &channel = server.getChannel(parsedCommand.channel_name);
-
-    if (add == true)
+    std::map<int, Client>::iterator it = this->ClientsMap.begin();
+    while(it != this->ClientsMap.end())
     {
-        clients.erase(parsedCommand.parameter);
-        operators.insert(std::pair<int,Client>(parsedCommand.parameter,client));
+        if(it->second.getNICKNAME() == nickname)
+            break;
+        it++;
     }
-    else
-        server._clients[parsedCommand.parameter]._modes &= ~0x01;
+    if (it == this->ClientsMap.end())
+        throw std::runtime_error("client not found");
+    return (*(it));
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+static Channel   &getChannel(Server *this, std::string channelName)
+{
+    std::map<std::string, Channel>::iterator it = this->myMap.find(keyToFind);
+
+    if (it == this->myMap.end())
+        throw std::runtime_error("channel not found");
+    return (*it);
+}
+
+/* -------------------------------------------------------------------------- */
+
+static void    setOperator(Server *this, bool add, t_parsedModeCommand &parsedCommand)
+{
+    try
+    {
+        Channel &channel = this->_channels.at(parsedCommand.parameter);
+        std::pair<int,Client> &client = getClient(this, parsedCommand.nickname);
+        if (add == true)
+        {
+            clients.erase(client.first);
+            operators.insert(client);
+        }
+        else
+        {
+            operators.erase(client.first);
+            clients.insert(client);
+        }
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
 }
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
-static void   setPrivateMode(Channel &channel, bool add, t_parsedModeCommand &parsedCommand)
+static void   setPrivateMode(bool add, t_parsedModeCommand &parsedCommand)
 {
     if (add == true)
         channel._modes |= 0x01;
@@ -71,7 +106,7 @@ static void   setPrivateMode(Channel &channel, bool add, t_parsedModeCommand &pa
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
-static void   setSecretMode(Channel &channel, bool add, t_parsedModeCommand &parsedCommand)
+static void   setSecretMode(bool add, t_parsedModeCommand &parsedCommand)
 {
     if (add == true)
         channel._modes |= 0x02;
@@ -81,7 +116,7 @@ static void   setSecretMode(Channel &channel, bool add, t_parsedModeCommand &par
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
-static void   setInviteOnlyMode(Channel &channel, bool add, t_parsedModeCommand &parsedCommand)
+static void   setInviteOnlyMode(bool add, t_parsedModeCommand &parsedCommand)
 {
     if (add == true)
         channel._modes |= 0x04;
@@ -91,7 +126,7 @@ static void   setInviteOnlyMode(Channel &channel, bool add, t_parsedModeCommand 
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
-static void   setModeratedMode(Channel &channel, bool add, t_parsedModeCommand &parsedCommand)
+static void   setModeratedMode(bool add, t_parsedModeCommand &parsedCommand)
 {
     if (add == true)
         channel._modes |= 0x08;
@@ -101,7 +136,7 @@ static void   setModeratedMode(Channel &channel, bool add, t_parsedModeCommand &
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
-static void   setVoiceAndOpsOnlyMode(Channel &channel, bool add, t_parsedModeCommand &parsedCommand)
+static void   setVoiceAndOpsOnlyMode(bool add, t_parsedModeCommand &parsedCommand)
 {
     if (add == true)
         channel._modes |= 0x10;
@@ -111,7 +146,7 @@ static void   setVoiceAndOpsOnlyMode(Channel &channel, bool add, t_parsedModeCom
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
-static void   setNoOutsideMessagesMode(Channel &channel, bool add, t_parsedModeCommand &parsedCommand)
+static void   setNoOutsideMessagesMode(bool add, t_parsedModeCommand &parsedCommand)
 {
     if (add == true)
         channel._modes |= 0x20;
@@ -121,7 +156,7 @@ static void   setNoOutsideMessagesMode(Channel &channel, bool add, t_parsedModeC
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
-static void   setOnlyOpsChangeTopicMode(Channel &channel, bool add, t_parsedModeCommand &parsedCommand)
+static void   setOnlyOpsChangeTopicMode(bool add, t_parsedModeCommand &parsedCommand)
 {
     if (add == true)
         channel._modes |= 0x40;
@@ -131,7 +166,7 @@ static void   setOnlyOpsChangeTopicMode(Channel &channel, bool add, t_parsedMode
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
-static void   setClientLimitMode(Channel &channel, uint64_t limit, bool add, t_parsedModeCommand &parsedCommand)
+static void   setClientLimitMode(uint64_t limit, bool add, t_parsedModeCommand &parsedCommand)
 {
     if (add == true)
         channel._modes |= 0x80;

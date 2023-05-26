@@ -11,82 +11,92 @@
 /* ************************************************************************** */
 
 #ifndef  IRCSERV_HEAD_HPP
-#define  IRCSERV_HEAD_HPP
+# define  IRCSERV_HEAD_HPP
 
-#include <iostream>
-#include <string>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/poll.h>
-#include <limits.h>
-#include <vector>
-#include <map>
-#include <arpa/inet.h>
-#include <utility>
-#include <string>
-#include <sstream>
-#include "srcs/errors.responces.macros.hpp"
-#include <cstring>
-#include <cstdlib>
-#include <time.h>
-#include <cstdlib>
-#include <sys/time.h>
+/* ------------------------------- LIBRARIES -------------------------------- */
+
+# include <map>
+# include <vector>
+# include <string>
+# include <time.h>
+# include <utility>
+# include <sstream>
+# include <cstring>
+# include <cstdlib>
+# include <fcntl.h>
+# include <netdb.h>
+# include <limits.h>
+# include <unistd.h>
+# include <iostream>
+# include <sys/time.h>
+# include <sys/poll.h>
+# include <arpa/inet.h>
+# include <netinet/in.h>
+# include "srcs/errors.responces.macros.hpp"
 
 // error replies macros
 // #define ERR_NEEDMOREPARAMS 461
 // #define ERR_ALREADYREGISTRED 462
 
-/* ************************************************************************** */
+/* -------------------------------- STRUCTS --------------------------------- */
+
+typedef struct s_parsedModeCommand
+{
+    std::string                 channel_name;
+    std::vector<std::string>    mode;
+    std::string                 parameter;
+}   t_parsedModeCommand;
+
+/* -------------------------------- CLASSES --------------------------------- */
 
 class Client
 {
     private:
-        __uint32_t IP; // IP adress of the client
-        std::string NICKNAME;
-        std::string USERNAME;
-        std::string REALNAME;
-        bool VP; // is the password validated
-        bool VN; // is nickname validated
-        bool VU; // is USER validated
-        bool Authenticated; // hadi matkhdmoch biha 
-        int sockfd; 
-        bool firstATH; // ila biti t3rf wach ithentificated khdm bhada
-        std::string buffer; // each client buffer
-        long connectedtime;// time to connect to the server
+        __uint32_t      IP;             // IP adress of the client
+        std::string     NICKNAME;
+        std::string     USERNAME;
+        std::string     REALNAME;
+        bool            VP;             // is the password validated
+        bool            VN;             // is nickname validated
+        bool            VU;             // is USER validated
+        bool            Authenticated;  // hadi matkhdmoch biha 
+        int             sockfd; 
+        bool            firstATH;       // ila biti t3rf wach ithentificated khdm bhada
+        std::string     buffer;         // each client buffer
+        long            connectedtime;  // time to connect to the server
     public:
         Client(int newsockfd, unsigned int IP);
         Client(const Client& other);
         Client& operator=(const Client& other);
         ~Client();
-        __uint32_t getIP();
-        bool getVP() const;
-        bool getVN() const;
-        bool getVU() const;
-        bool getAuthenticated() const;
-        int getSockfd() const;
-        std::string getNICKNAME() const;
-        std::string getUSERNAME() const;
-        std::string getREALNAME() const;
-        bool getfirstATH() const;
-        std::string getbuffer() const;
-        long gettime() const;
 
-        void setVP(bool v);
-        void setVN(bool v);
-        void setVU(bool v);
-        void setAuthenticated(bool v);
-        void setSockfd(int v);
-        void setNICKNAME(std::string NICK);
-        void setUSERNAME(std::string USERNAME);
-        void setREALNAME(std::string REALNAME);
-        void setfirstATH(bool v);
-        void setbuffer(std::string arg);
-        void settime(long time);
+        __uint32_t      getIP();
+        bool            getVP() const;
+        bool            getVN() const;
+        bool            getVU() const;
+        bool            getAuthenticated() const;
+        int             getSockfd() const;
+        std::string     getNICKNAME() const;
+        std::string     getUSERNAME() const;
+        std::string     getREALNAME() const;
+        bool            getfirstATH() const;
+        std::string     getbuffer() const;
+        long            gettime() const;
+
+        void    setVP(bool v);
+        void    setVN(bool v);
+        void    setVU(bool v);
+        void    setAuthenticated(bool v);
+        void    setSockfd(int v);
+        void    setNICKNAME(std::string NICK);
+        void    setUSERNAME(std::string USERNAME);
+        void    setREALNAME(std::string REALNAME);
+        void    setfirstATH(bool v);
+        void    setbuffer(std::string arg);
+        void    settime(long time);
 };
 
-/* ************************************************************************** */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
 class Channel {
     private:
@@ -142,7 +152,7 @@ class Channel {
 
 };
 
-/* ************************************************************************** */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
 class Server
 {
@@ -183,12 +193,11 @@ class Server
         void    addChannel(int fd, std::string chName, std::string chPass);
         void    RemoveChannel();
 
-        std::pair<int,Client>            &getClient(std::string nickname);
-        std::pair<std::string,Channel>   &getChannel(std::string channelName);
+        void    executeModeCommand(std::string command);
 };
 
-/* ************************************************************************** */
+/* -------------------------------- PROTOTYPES ------------------------------ */
 
 void    writemessagetoclients(int fd, std::string message);
 
-#endif
+#endif // SERVER_HPP
