@@ -69,21 +69,15 @@ void    Server::addChannel(int fd, std::string chName, std::string chPass){
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
-void Server::RemoveChannel(){
-    std::cout << "Not implemented yet" << std::endl;
-}
-
-/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
-
-void Server::HandleJOIN(size_t pfdsindex, std::string args){
-    if (args.empty()) {
+void Server::HandleJOIN(size_t pfdsindex, std::vector<std::string> args){
+    if (args.size() < 2) {
         std::string cmd = "JOIN";
         ERR_NEEDMOREPARAMS(pfdsindex, cmd);
-    } else if(args.size() < 2 ) {
-        ERR_INVALIDCHNLNAME(pfdsindex, args);
+    } else if(args[1].size() < 2 ) {
+        ERR_INVALIDCHNLNAME(pfdsindex, args[1]);
     } else {
         std::pair<std::vector<std::string>, std::vector<std::string> > parsedArgs = \
-        parse_JOIN(args);
+        parse_JOIN(args[1]);
         for (std::size_t i=0;i<parsedArgs.first.size();i++){
             std::string chPass = i < parsedArgs.second.size() ? parsedArgs.second[i] : "";
             std::map<std::string, IRCChannel>::iterator channel = this->ChannelsMap.find(parsedArgs.first[i]);

@@ -135,12 +135,11 @@ std::string IRCChannel::getChannelTopic() const{
 void IRCChannel::notifyUsers(int fd){
 
     std::string notifyusers = ":" + this->_joinedUsers.find(fd)->second.getNICKNAME() \
-    + "!" + this->_joinedUsers.find(fd)->second.getUSERNAME() + "@localhost JOIN " \
+    + "!" + this->_joinedUsers.find(fd)->second.getUSERNAME() + "@localhost.ip JOIN " \
     + this->getChannelName() + "\n";
+    // :Guest75045!~hh@5c8c-aff4-7127-3c3-1c20.230.197.ip JOIN :#general
     for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
-        if (i->first != fd){
-            writemessagetoclients(i->first, notifyusers);
-        }
+        writemessagetoclients(i->first, notifyusers);
     }
 }
 
@@ -148,19 +147,17 @@ void IRCChannel::notifyUsers(int fd){
 
 void IRCChannel::welcomeUser(int fd){
 
-// :irc.server.com 353 john = #example :@opUser +voiceUser regularUser
-    if (this->_joinedUsers.size() > 1){
-        std::string welcome = ":IrcTheThreeMusketeers 353 " + \
-        this->_joinedUsers.find(fd)->second.getNICKNAME() + " = " + this->getChannelName() + \
-        ":";
+        std::string nickName = this->_joinedUsers.find(fd)->second.getNICKNAME();
+        std::string membersList;
         for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
-            if (i->first != fd){
-                welcome += i->second.getNICKNAME() + " ";
-            }
+            if (this->_admins.find(i->first) != this->_admins.end()){
+                membersList += "@" + i->second.getNICKNAME() + " ";
+            }else
+                membersList += i->second.getNICKNAME() + " ";
         }
-        welcome += "\n";
-        writemessagetoclients(fd, welcome);
-    }
+        RPL_NAMREPLY(fd, nickName,  this->getChannelName(), membersList);
+        RPL_ENDOFNAMES(fd, nickName,  this->getChannelName());
+
 }
 
 
@@ -175,12 +172,12 @@ void    IRCChannel::joinChannel(Client &client, std::string &chPass, int fd){
         ERR_CHANNELISFULL(fd, this->getChannelName());
     } else if (this->_joinedUsers.find(fd) == this->_joinedUsers.end()){
         this->_joinedUsers.insert(std::make_pair(fd, client));
-        if (this->getChannelTopic().empty()){
-            RPL_NOTOPIC(fd, this->getChannelName());
-        } else
-            RPL_TOPIC(fd, this->getChannelName(), this->getChannelTopic());
-        notifyUsers(fd);
-        welcomeUser(fd);
+        // if (this->getChannelTopic().empty()){
+        //     RPL_NOTOPIC(fd, this->getChannelName());
+        // } else
+        //     RPL_TOPIC(fd, this->getChannelName(), this->getChannelTopic());
+        this->notifyUsers(fd);
+        this->welcomeUser(fd);
     }
 }
 
