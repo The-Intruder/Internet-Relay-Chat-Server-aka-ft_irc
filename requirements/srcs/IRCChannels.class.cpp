@@ -139,7 +139,7 @@ void IRCChannel::notifyUsers(int fd){
     + this->getChannelName() + "\n";
     // :Guest75045!~hh@5c8c-aff4-7127-3c3-1c20.230.197.ip JOIN :#general
     for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
-        writemessagetoclients(i->first, notifyusers);
+        writeMessageToClient(i->first, notifyusers);
     }
 }
 
@@ -172,10 +172,6 @@ void    IRCChannel::joinChannel(Client &client, std::string &chPass, int fd){
         ERR_CHANNELISFULL(fd, this->getChannelName());
     } else if (this->_joinedUsers.find(fd) == this->_joinedUsers.end()){
         this->_joinedUsers.insert(std::make_pair(fd, client));
-        // if (this->getChannelTopic().empty()){
-        //     RPL_NOTOPIC(fd, this->getChannelName());
-        // } else
-        //     RPL_TOPIC(fd, this->getChannelName(), this->getChannelTopic());
         this->notifyUsers(fd);
         this->welcomeUser(fd);
     }
@@ -185,5 +181,25 @@ void    IRCChannel::joinChannel(Client &client, std::string &chPass, int fd){
 void    IRCChannel::addAdmin(int fd){
     this->_admins.insert(std::make_pair(fd, this->_joinedUsers.find(fd)->second));
 }
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+void    IRCChannel::messagToChannel(int fd, std::string &msg){
+    std::map<int, Client>::iterator client = this->_joinedUsers.find(fd);
+    if (client != this->_joinedUsers.end() && this->_bannedUsers.find(fd) == this->_bannedUsers.end()){
+        if (!this->isOnlyVoiceAndOps() || (this->isOnlyVoiceAndOps() && this->_admins.find(fd) != this->_admins.end())){
+            std::string fullMsg = ":" + client->second.getNICKNAME() \
+            + "!" + client->second.getUSERNAME() + "@localhost.ip PRIVMSG " \
+            + this->getChannelName() + " :" + msg + "\n";
+
+            for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
+                if (i->first != fd)
+                    writeMessageToClient(i->first, fullMsg);
+            }
+        } else
+            ERR_CANNOTSENDTOCHAN(fd, this->getChannelName());
+    } else
+        ERR_CANNOTSENDTOCHAN(fd, this->getChannelName());
+}
+
 
 /* -------------------------------------------------------------------------- */

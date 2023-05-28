@@ -302,19 +302,17 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "QUIT" || MS[0] == "quit") // quit
         std::cout << "QUIT\n";
     else if(MS[0] == "JOIN" || MS[0] == "join") // join
-        this->HandleJOIN(pfdsindex, MS[1]);
+        this->HandleJOIN(pfdsindex, MS);
     else if(MS[0] == "PART" || MS[0] == "part") // part
         std::cout << "part\n";
-    else if(MS[0] == "TOPIC" || MS[0] == "topic") // part 
+    else if(MS[0] == "TOPIC" || MS[0] == "topic") // topic 
         std::cout << "topic\n";
-    else if(MS[0] == "NAMES" || MS[0] == "names") // names
-        std::cout << "names\n";
     else if(MS[0] == "INVITE" || MS[0] == "invite") // invite
         std::cout << "invite\n";
     else if(MS[0] == "KICK" || MS[0] == "kick") // kick
         std::cout << "kick\n";
     else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg") // privmsg
-        this->HandlePRIVMSG(pfdsindex, MS[1]);
+        this->HandlePRIVMSG(pfdsindex, MS);
     else if(MS[0] == "NOTICE" || MS[0] == "notice") // notice
         std::cout << "notice\n";
     else // command not found

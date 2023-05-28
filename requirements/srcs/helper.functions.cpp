@@ -1,7 +1,7 @@
 #include "../ircserv.head.hpp"
 
 /* -------------------------------------------------------------------------- */
-void    writemessagetoclients(int fd, std::string message)
+void    writeMessageToClient(int fd, std::string message)
 {
     int valwrite = write(fd, message.c_str() ,message.length());
     if(valwrite < 0)

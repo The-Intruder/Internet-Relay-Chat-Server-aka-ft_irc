@@ -28,7 +28,8 @@ bool containsCTLG(const std::string& str) {
 
 bool checkChannelName(std::string &chName){
     if (containsCTLG(chName) || (chName.find(": ,") != std::string::npos) \
-        || (chName.length() < 2 || chName.length() > 200)){
+        || (chName.length() < 2 || chName.length() > 200) \
+        || (chName.at(0) != '#')){
         return true;
     }
     return false;
@@ -73,7 +74,7 @@ void Server::HandleJOIN(size_t pfdsindex, std::vector<std::string> args){
     if (args.size() < 2) {
         std::string cmd = "JOIN";
         ERR_NEEDMOREPARAMS(pfdsindex, cmd);
-    } else if(args[1].size() < 2 ) {
+    } else if(args[1].size() < 2) {
         ERR_INVALIDCHNLNAME(pfdsindex, args[1]);
     } else {
         std::pair<std::vector<std::string>, std::vector<std::string> > parsedArgs = \
@@ -82,9 +83,9 @@ void Server::HandleJOIN(size_t pfdsindex, std::vector<std::string> args){
             std::string chPass = i < parsedArgs.second.size() ? parsedArgs.second[i] : "";
             std::map<std::string, IRCChannel>::iterator channel = this->ChannelsMap.find(parsedArgs.first[i]);
             if (checkChannelName(parsedArgs.first[i])){
-                ERR_INVALIDCHNLNAME(this->pfds[pfdsindex].fd, parsedArgs.first[i]);
+                ERR_INVALIDCHNLNAME(pfdsindex, parsedArgs.first[i]);
             } else if (channel == this->ChannelsMap.end()){
-                addChannel(this->pfds[pfdsindex].fd, parsedArgs.first[i], chPass);
+                this->addChannel(this->pfds[pfdsindex].fd, parsedArgs.first[i], chPass);
             } else if (channel != this->ChannelsMap.end()) {
                 channel->second.joinChannel(this->ClientsMap.find(this->pfds[pfdsindex].fd)->second, chPass, this->pfds[pfdsindex].fd);
             }
@@ -94,10 +95,5 @@ void Server::HandleJOIN(size_t pfdsindex, std::vector<std::string> args){
 
 /* -------------------------------------------------------------------------- */
 
-/*
-TODO: JOIN command
-    : 
-    
-*/
 
 

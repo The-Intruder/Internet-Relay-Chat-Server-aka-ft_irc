@@ -121,6 +121,7 @@ class IRCChannel {
         void        joinChannel(Client &client, std::string &chPass, int fd);
         void        notifyUsers(int fd);
         void        welcomeUser(int fd);
+        void        messagToChannel(int fd, std::string &msg);
 };
 
 class Server
@@ -159,14 +160,16 @@ class Server
         void executecommand(size_t pfdsindex);
         // commands
         void bot(size_t pfdsindex);
-        /*---------------------- Hssain-Part ------------------ */
-        void HandleJOIN(size_t pfdsindex, std::string args);
+        /*----------- Anything related to channels and messages ------------- */
+        void HandleJOIN(size_t pfdsindex, std::vector<std::string> args);
         void addChannel(int fd, std::string chName, std::string chPass);
-        void HandlePRIVMSG(size_t pfdsindex, std::string args);
-        void RemoveChannel();
+        void HandlePRIVMSG(size_t pfdsindex, std::vector<std::string> args);
+        void handdleMSG(std::size_t pfdsindex, std::vector<std::vector<std::string> > args);
+        void messagToClient(std::size_t pfdsindex, std::string &clientNick, std::string &msg);
 };
 
 /* -------------------------------------------------------------------------- */
-void    writemessagetoclients(int fd, std::string message);
+// helper functions
+void    writeMessageToClient(int fd, std::string message);
 
 #endif
