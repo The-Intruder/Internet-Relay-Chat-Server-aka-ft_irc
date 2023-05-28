@@ -99,7 +99,7 @@ class Client
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
 class Channel {
-    private:
+    public:
         std::map<int,Client>            _joinedClients; // Clients that joined specifec channel
         std::map<int,Client>            _admins;        // Admins of a specifec channel
         std::map<int,Client>            _operators;     // Operators of a specifec channel
@@ -108,7 +108,6 @@ class Channel {
         std::string                     _channel_name;
         std::string                     _channel_pass;
         std::string                     _topic;
-    public:
         uint64_t                        _client_limit;
         uint32_t                        _modes;
 
@@ -124,12 +123,6 @@ class Channel {
         bool        isOnlyVoiceAndOps() const;
         bool        isNoOutsideMessages() const;
         bool        isOnlyOpsChangeTopic() const;
-
-        std::map<int, Client> &getClients();        // NOT YET IMPLEMENTED 
-        std::map<int, Client> &getAdmins();         // NOT YET IMPLEMENTED
-        std::map<int, Client> &getOperators();      // NOT YET IMPLEMENTED
-        std::map<int, Client> &getBannedClients();  // NOT YET IMPLEMENTED
-        std::map<int, Client> &getVoicedClients();  // NOT YET IMPLEMENTED
 
         void        setChannelName(const std::string &channelName);
         std::string getChannelName() const;
@@ -156,7 +149,7 @@ class Channel {
 
 class Server
 {
-    private:
+    public:
         int                             PORT;           // argument port
         int                             servsockfd;     // socket file descriptor of the server
         std::string                     PASSWORD;       // password of the server

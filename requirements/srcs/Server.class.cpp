@@ -285,11 +285,11 @@ void Server::getDateTime()
 {
     char ServTime[80];
     time_t RawTime;
-   struct tm* TimeInfos;
-   time(&RawTime);
-   TimeInfos = localtime(&RawTime);
-   strftime(ServTime, 80, "%Y-%m-%d %H:%M:%S", TimeInfos);
-   Servtimeinfo = ServTime;
+    struct tm* TimeInfos;
+    time(&RawTime);
+    TimeInfos = localtime(&RawTime);
+    strftime(ServTime, 80, "%Y-%m-%d %H:%M:%S", TimeInfos);
+    Servtimeinfo = ServTime;
 }
 
 void Server::executecommand(size_t pfdsindex)
@@ -299,11 +299,11 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "NICK" || MS[0] == "nick")         // nick 
         std::cout << "NICK\n";
     else if(MS[0] == "MODE" || MS[0] == "mode")         // mode
-        std::cout << "MODE\n";
+        executeModeCommand(MS[1]);
     else if(MS[0] == "QUIT" || MS[0] == "quit")         // quit
         std::cout << "QUIT\n";
     else if(MS[0] == "JOIN" || MS[0] == "join")         // join
-        this->HandleJOIN(pfdsindex, MS[1]);
+        HandleJOIN(pfdsindex, MS[1]);
     else if(MS[0] == "PART" || MS[0] == "part")         // part
         std::cout << "part\n";
     else if(MS[0] == "TOPIC" || MS[0] == "topic")       // part 

@@ -25,7 +25,7 @@ Channel::Channel(std::string channelName, std::string channelPass){
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
 Channel::Channel(Channel const &src){
-    _joinedUsers = src._joinedUsers;
+    _joinedClients = src._joinedClients;
     _admins = src._admins;
     _channel_name = src._channel_name;
     _channel_pass = src._channel_pass;
@@ -38,7 +38,7 @@ Channel::Channel(Channel const &src){
 
 const Channel &Channel::operator=(Channel const &src){
     if (this != &src) {
-        _joinedUsers = src._joinedUsers;
+        _joinedClients = src._joinedClients;
         _admins = src._admins;
         _channel_name = src._channel_name;
         _channel_pass = src._channel_pass;
@@ -134,10 +134,10 @@ std::string Channel::getChannelTopic() const{
 
 void Channel::notifyUsers(int fd){
 
-    std::string notifyusers = ":" + this->_joinedUsers.find(fd)->second.getNICKNAME() \
-    + "!" + this->_joinedUsers.find(fd)->second.getUSERNAME() + "@localhost JOIN " \
+    std::string notifyusers = ":" + this->_joinedClients.find(fd)->second.getNICKNAME() \
+    + "!" + this->_joinedClients.find(fd)->second.getUSERNAME() + "@localhost JOIN " \
     + this->getChannelName() + "\n";
-    for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
+    for(std::map<int, Client>::iterator i = this->_joinedClients.begin(); i != this->_joinedClients.end();i++){
         if (i->first != fd){
             writemessagetoclients(i->first, notifyusers);
         }
@@ -149,11 +149,11 @@ void Channel::notifyUsers(int fd){
 void Channel::welcomeUser(int fd){
 
 // :irc.server.com 353 john = #example :@opUser +voiceUser regularUser
-    if (this->_joinedUsers.size() > 1){
+    if (this->_joinedClients.size() > 1){
         std::string welcome = ":IrcTheThreeMusketeers 353 " + \
-        this->_joinedUsers.find(fd)->second.getNICKNAME() + " = " + this->getChannelName() + \
+        this->_joinedClients.find(fd)->second.getNICKNAME() + " = " + this->getChannelName() + \
         ":";
-        for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
+        for(std::map<int, Client>::iterator i = this->_joinedClients.begin(); i != this->_joinedClients.end();i++){
             if (i->first != fd){
                 welcome += i->second.getNICKNAME() + " ";
             }
@@ -171,10 +171,10 @@ void    Channel::joinChannel(Client &client, std::string &chPass, int fd){
         ERR_BADCHANNELKEY(fd, this->getChannelName());
     } else if (this->isInviteOnly()){
         ERR_INVITEONLYCHAN(fd, this->getChannelName());
-    }else if (this->_joinedUsers.size() >= this->getClientLimit()){
+    }else if (this->_joinedClients.size() >= this->getClientLimit()){
         ERR_CHANNELISFULL(fd, this->getChannelName());
-    } else if (this->_joinedUsers.find(fd) == this->_joinedUsers.end()){
-        this->_joinedUsers.insert(std::make_pair(fd, client));
+    } else if (this->_joinedClients.find(fd) == this->_joinedClients.end()){
+        this->_joinedClients.insert(std::make_pair(fd, client));
         if (this->getChannelTopic().empty()){
             RPL_NOTOPIC(fd, this->getChannelName());
         } else
@@ -186,7 +186,7 @@ void    Channel::joinChannel(Client &client, std::string &chPass, int fd){
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 void    Channel::addAdmin(int fd){
-    this->_admins.insert(std::make_pair(fd, this->_joinedUsers.find(fd)->second));
+    this->_admins.insert(std::make_pair(fd, this->_joinedClients.find(fd)->second));
 }
 
 /* -------------------------------------------------------------------------- */
