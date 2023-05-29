@@ -312,9 +312,9 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "KICK" || MS[0] == "kick") // kick
         std::cout << "kick\n";
     else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg") // privmsg
-        this->HandlePRIVMSG(pfdsindex, MS);
+        this->PRIVMSG_Handle(pfdsindex, MS);
     else if(MS[0] == "NOTICE" || MS[0] == "notice") // notice
-        std::cout << "notice\n";
+        this->NOTICE_Handle(pfdsindex, MS);
     else // command not found
     {
         if(MS[0] != "PING" && MS[0] != "PONG") // ignore PING AND PONG requests from limechat
@@ -331,5 +331,3 @@ long	Server::ft_gettime(void)
 	return (current_time.tv_sec);
 }
 
-
-// and abort ocurres when I disconnect a user from limechat

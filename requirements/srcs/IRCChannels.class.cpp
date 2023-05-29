@@ -183,7 +183,7 @@ void    IRCChannel::addAdmin(int fd){
 }
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
-void    IRCChannel::messagToChannel(int fd, std::string &msg){
+void    IRCChannel::PRIVMSG_messagToChannel(int fd, std::string &msg){
     std::map<int, Client>::iterator client = this->_joinedUsers.find(fd);
     if (client != this->_joinedUsers.end() && this->_bannedUsers.find(fd) == this->_bannedUsers.end()){
         if (!this->isOnlyVoiceAndOps() || (this->isOnlyVoiceAndOps() && this->_admins.find(fd) != this->_admins.end())){
@@ -199,6 +199,23 @@ void    IRCChannel::messagToChannel(int fd, std::string &msg){
             ERR_CANNOTSENDTOCHAN(fd, this->getChannelName());
     } else
         ERR_CANNOTSENDTOCHAN(fd, this->getChannelName());
+}
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+void    IRCChannel::NOTICE_messagToChannel(int fd, std::string &msg){
+    std::map<int, Client>::iterator client = this->_joinedUsers.find(fd);
+    if (client != this->_joinedUsers.end() && this->_bannedUsers.find(fd) == this->_bannedUsers.end()){
+        if (!this->isOnlyVoiceAndOps() || (this->isOnlyVoiceAndOps() && this->_admins.find(fd) != this->_admins.end())){
+            std::string fullMsg = ":" + client->second.getNICKNAME() \
+            + "!" + client->second.getUSERNAME() + "@localhost.ip PRIVMSG " \
+            + this->getChannelName() + " :" + msg + "\n";
+
+            for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
+                if (i->first != fd)
+                    writeMessageToClient(i->first, fullMsg);
+            }
+        }
+    }
 }
 
 

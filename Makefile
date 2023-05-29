@@ -32,7 +32,7 @@ HEADER		:= requirements/ircserv.head.hpp
 
 SRCS_DIR := requirements/srcs/
 SRCS_LST := Server.class.cpp Clients.class.cpp  IRCChannels.class.cpp handdle_JOIN.cpp \
-			Bot.cpp helper.functions.cpp handdle_PRIVMSG.cpp
+			Bot.cpp helper.functions.cpp PRIVMSG_NOTICE_utils.cpp handdle_PRIVMSG.cpp handdle_NOTICE.cpp
 SRCS := ${addprefix ${SRCS_DIR}, ${SRCS_LST}}
 
 OBJS_DIR := requirements/objs/

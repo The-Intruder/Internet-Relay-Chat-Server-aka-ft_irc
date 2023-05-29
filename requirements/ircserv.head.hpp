@@ -121,7 +121,8 @@ class IRCChannel {
         void        joinChannel(Client &client, std::string &chPass, int fd);
         void        notifyUsers(int fd);
         void        welcomeUser(int fd);
-        void        messagToChannel(int fd, std::string &msg);
+        void        PRIVMSG_messagToChannel(int fd, std::string &msg);
+        void        NOTICE_messagToChannel(int fd, std::string &msg);
 };
 
 class Server
@@ -161,15 +162,30 @@ class Server
         // commands
         void bot(size_t pfdsindex);
         /*----------- Anything related to channels and messages ------------- */
+        // JOIN
         void HandleJOIN(size_t pfdsindex, std::vector<std::string> args);
         void addChannel(int fd, std::string chName, std::string chPass);
-        void HandlePRIVMSG(size_t pfdsindex, std::vector<std::string> args);
-        void handdleMSG(std::size_t pfdsindex, std::vector<std::vector<std::string> > args);
-        void messagToClient(std::size_t pfdsindex, std::string &clientNick, std::string &msg);
+        // PRIVMSG
+        void PRIVMSG_Handle(size_t pfdsindex, std::vector<std::string> args);
+        void PRIVMSG_handdleMSG(std::size_t pfdsindex, std::vector<std::vector<std::string> > args);
+        void PRIVMSG_messagToClient(std::size_t pfdsindex, std::string &clientNick, std::string &msg);
+        // NOTICE
+        void NOTICE_Handle(size_t pfdsindex, std::vector<std::string> args);
+        void NOTICE_handdleMSG(std::size_t pfdsindex, std::vector<std::vector<std::string> > args);
+        void NOTICE_messagToClient(std::size_t pfdsindex, std::string &clientNick, std::string &msg);
 };
 
 /* -------------------------------------------------------------------------- */
 // helper functions
 void    writeMessageToClient(int fd, std::string message);
+
+
+
+/* -------------------------------------------------------------------------- */
+// PRIVMSG_NOTICE_utils
+void                                    stringTrim(std::string &str, const char *to_trim);
+std::string                             is_duplicate(std::vector<std::string> receivers);
+std::vector<std::vector<std::string> >  finalData(std::vector<std::string> buffer);
+std::vector<std::vector<std::string> >  parseArgs(std::string args);
 
 #endif
