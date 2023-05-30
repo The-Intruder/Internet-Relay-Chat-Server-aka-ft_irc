@@ -304,7 +304,7 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "JOIN" || MS[0] == "join") // join
         this->HandleJOIN(pfdsindex, MS);
     else if(MS[0] == "PART" || MS[0] == "part") // part
-        std::cout << "part\n";
+        this->PART_Handle(pfdsindex, MS);
     else if(MS[0] == "TOPIC" || MS[0] == "topic") // topic 
         std::cout << "topic\n";
     else if(MS[0] == "INVITE" || MS[0] == "invite") // invite

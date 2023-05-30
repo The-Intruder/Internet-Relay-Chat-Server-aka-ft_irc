@@ -173,6 +173,8 @@ class Server
         void NOTICE_Handle(size_t pfdsindex, std::vector<std::string> args);
         void NOTICE_handdleMSG(std::size_t pfdsindex, std::vector<std::vector<std::string> > args);
         void NOTICE_messagToClient(std::size_t pfdsindex, std::string &clientNick, std::string &msg);
+        // PART
+        void PART_Handle(size_t pfdsindex, std::vector<std::string> args);
 };
 
 /* -------------------------------------------------------------------------- */

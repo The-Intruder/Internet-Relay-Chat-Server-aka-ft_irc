@@ -18,7 +18,9 @@ std::string    is_duplicate(std::vector<std::string> receivers){
     return std::string();
 }
 
-std::vector<std::vector<std::string> >    finalData(std::vector<std::string> buffer){
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+std::vector<std::vector<std::string> >    splitReceivers(std::vector<std::string> buffer){
     std::vector<std::vector<std::string> >  result;
     std::vector<std::string>                receivers;
     std::vector<std::string>                msg;
@@ -41,14 +43,12 @@ std::vector<std::vector<std::string> >    finalData(std::vector<std::string> buf
         if (!duplicatedToken.empty())
             throw std::runtime_error(duplicatedToken);
         result.push_back(receivers);
-        msg.push_back(buffer[1]);
-        result.push_back(msg);
     } else {
         receivers.push_back(buffer[0]);
-        msg.push_back(buffer[1]);
         result.push_back(receivers);
-        result.push_back(msg);
     }
+    msg.push_back(buffer[1]);
+    result.push_back(msg);
     return result;
 }
 
@@ -81,7 +81,7 @@ std::vector<std::vector<std::string> >    parseArgs(std::string args){
                 break;
         }
     }
-    return finalData(buffer);
+    return splitReceivers(buffer);
 }
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
