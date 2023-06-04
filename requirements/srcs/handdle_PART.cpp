@@ -1,7 +1,6 @@
 #include "../ircserv.head.hpp"
 
 /* -------------------------------------------------------------------------- */
-
 std::vector<std::vector<std::string> >    PART_splitChannels(std::vector<std::string> buffer){
     std::vector<std::vector<std::string> >  result;
     std::vector<std::string>                channels;
@@ -9,7 +8,6 @@ std::vector<std::vector<std::string> >    PART_splitChannels(std::vector<std::st
 
     if(buffer.empty())
         throw std::runtime_error("ERR_NEEDMOREPARAMS");
-    std::cout << "debug" << std::endl;
     if (buffer[0].find(",")  != std::string::npos){
         std::string token;
         std::stringstream ss(buffer[0]);
@@ -36,7 +34,6 @@ std::vector<std::vector<std::string> >    PART_splitChannels(std::vector<std::st
 }
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
-
 std::vector<std::vector<std::string> >    PART_parseArgs(std::string args){
     std::string token;
     std::vector<std::string> buffer;
@@ -61,18 +58,17 @@ std::vector<std::vector<std::string> >    PART_parseArgs(std::string args){
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
 void    Server::PART_trigger(std::size_t pfdsindex, std::vector<std::vector<std::string> > args){
-    std::vector<std::string>    receivers = args[0];
-    std::string    msg = args[1][0];
-    for (std::vector<std::string>::iterator it = receivers.begin(); it != receivers.end();it++){
-        if (it->at(0) == '#'){
-            std::map<std::string, IRCChannel>::iterator chanl = this->ChannelsMap.find(*it);
-            if (chanl != this->ChannelsMap.end())
-                chanl->second.PART_messagToChannel(this->pfds[pfdsindex].fd, msg);
-            else
-                ERR_NOSUCHNICK(pfdsindex, this->ClientsMap.find(this->pfds[pfdsindex].fd)->second.getNICKNAME(), *it);
-        } else {
-            this->PART_messagToClient(pfdsindex, *it, msg);
-        }
+    std::vector<std::string>    chNames = args[0];
+    std::string    msg = "";
+    if (args.size() == 2)
+        msg = args[1][0];
+    for (std::vector<std::string>::iterator it = chNames.begin(); it != chNames.end();it++){
+        std::map<std::string, IRCChannel>::iterator channel = this->ChannelsMap.find(*it);
+        if(channel != this->ChannelsMap.end()){
+            channel->second.leftChannel(this->pfds[pfdsindex].fd, msg);
+            this->removeChannel(channel->second.getChannelName());
+        }else
+            ERR_NOSUCHCHANNEL(pfdsindex, *it);
     }
 }
 
@@ -84,11 +80,9 @@ void    Server::PART_Handle(size_t pfdsindex, std::vector<std::string> args){
         if (!args[1].empty()){
             try{
                 std::vector<std::vector<std::string> > cleanArgs = PART_parseArgs(args[1]);
-                std::cout << "Result size: " << cleanArgs[0].size() << std::endl;
                 this->PART_trigger(pfdsindex, cleanArgs);
             }catch(const std::exception& e) {
                 std::string err = e.what();
-                std::cout << "exception cought: " << err << std::endl;
                 if (!err.compare("ERR_NEEDMOREPARAMS")){
                     ERR_NEEDMOREPARAMS(pfdsindex, args[0]);
                 }

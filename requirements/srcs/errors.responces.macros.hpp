@@ -63,4 +63,14 @@
 #define ERR_NOSUCHNICK(pfdsindex, sender, receiver){std::string message = ":IrcTheThreeMusketeers 401 " + sender + " " + receiver + " :No such nick/channel\n";writemessagetoclients(pfdsindex, message);}
 #define ERR_CANNOTSENDTOCHAN(fd, chName){std::string message = ":IrcTheThreeMusketeers 404 " + chName + " :Cannot send to channel\n";writeMessageToClient(fd, message);}
 
+
+
+/*
+           ERR_NEEDMOREPARAMS              ERR_NOSUCHCHANNEL
+           ERR_NOTONCHANNEL
+*/
+
+#define ERR_NOSUCHCHANNEL(pfdsindex, chName){std::string message = ":IrcTheThreeMusketeers 403 " + chName + " :No such channel\n";writemessagetoclients(pfdsindex, message);}
+#define ERR_NOTONCHANNEL(fd, chName){std::string message = ":IrcTheThreeMusketeers 442 " + chName + " :You're not on that channel\n";writeMessageToClient(fd, message);}
+
 #endif

@@ -132,12 +132,17 @@ std::string IRCChannel::getChannelTopic() const{
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
+bool    IRCChannel::empty() const{
+    return this->_joinedUsers.size() < 1;
+}
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
 void IRCChannel::notifyUsers(int fd){
 
     std::string notifyusers = ":" + this->_joinedUsers.find(fd)->second.getNICKNAME() \
     + "!" + this->_joinedUsers.find(fd)->second.getUSERNAME() + "@localhost.ip JOIN " \
     + this->getChannelName() + "\n";
-    // :Guest75045!~hh@5c8c-aff4-7127-3c3-1c20.230.197.ip JOIN :#general
     for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
         writeMessageToClient(i->first, notifyusers);
     }
@@ -218,5 +223,31 @@ void    IRCChannel::NOTICE_messagToChannel(int fd, std::string &msg){
     }
 }
 
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+void IRCChannel::sayGoodby(int fd, std::string &msg){
+    std::string sayBy = ":" + this->_joinedUsers.find(fd)->second.getNICKNAME() \
+    + "!" + this->_joinedUsers.find(fd)->second.getUSERNAME() + "@localhost.ip PART " \
+    + this->getChannelName() + " " + msg + "\n";
+    for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
+        writeMessageToClient(i->first, sayBy);
+    }
+}
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+void    IRCChannel::leftChannel(int fd, std::string &msg){
+    std::map<int, Client>::iterator clientIt = this->_joinedUsers.find(fd);
+    if (clientIt != this->_joinedUsers.end()){
+        sayGoodby(fd, msg);
+        this->_joinedUsers.erase(clientIt);
+        std::map<int, Client>::iterator adminIt = this->_admins.find(fd);
+        if (adminIt != this->_admins.end())
+            this->_admins.erase(adminIt);
+    } else{
+        ERR_NOTONCHANNEL(fd, this->getChannelName());
+    }
+}
 
 /* -------------------------------------------------------------------------- */
+

@@ -117,12 +117,15 @@ class IRCChannel {
         std::string getChannelPass() const;
         void        setClientPass(std::string channel_pass);
         std::string getChannelTopic() const;
+        bool        empty() const;
         void        addAdmin(int fd);
         void        joinChannel(Client &client, std::string &chPass, int fd);
         void        notifyUsers(int fd);
         void        welcomeUser(int fd);
         void        PRIVMSG_messagToChannel(int fd, std::string &msg);
         void        NOTICE_messagToChannel(int fd, std::string &msg);
+        void        leftChannel(int fd, std::string &msg);
+        void        sayGoodby(int fd, std::string &msg);
 };
 
 class Server
@@ -130,7 +133,7 @@ class Server
     private:
         int PORT; // argument port
         std::string PASSWORD; // password of the server
-        int servsockfd; // socket file descriptor of the server
+        int servsockfd; // socket file descriptor of the server0
         struct sockaddr_in ServAddr; // socket address of the server
         std::vector<pollfd> pfds; // file descriptors to keep eyes on 
         std::map<int,Client>  ClientsMap; // clients map
@@ -176,10 +179,12 @@ class Server
         // PART
         void PART_Handle(size_t pfdsindex, std::vector<std::string> args);
         void PART_trigger(std::size_t pfdsindex, std::vector<std::vector<std::string> > args);
+        // Misc
+        void removeChannel(std::string chName);
 };
 
 /* -------------------------------------------------------------------------- */
-// helper functions
+// Misc functions
 void    writeMessageToClient(int fd, std::string message);
 
 
