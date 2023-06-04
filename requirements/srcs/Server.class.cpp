@@ -322,7 +322,6 @@ void Server::executecommand(size_t pfdsindex)
     }
 }
 
-
 long	Server::ft_gettime(void)
 {
 	struct timeval	current_time;

@@ -60,21 +60,21 @@ std::vector<std::vector<std::string> >    PART_parseArgs(std::string args){
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
-// void    Server::PRIVMSG_handdleMSG(std::size_t pfdsindex, std::vector<std::vector<std::string> > args){
-//     std::vector<std::string>    receivers = args[0];
-//     std::string    msg = args[1][0];
-//     for (std::vector<std::string>::iterator it = receivers.begin(); it != receivers.end();it++){
-//         if (it->at(0) == '#'){
-//             std::map<std::string, IRCChannel>::iterator chanl = this->ChannelsMap.find(*it);
-//             if (chanl != this->ChannelsMap.end())
-//                 chanl->second.PRIVMSG_messagToChannel(this->pfds[pfdsindex].fd, msg);
-//             else
-//                 ERR_NOSUCHNICK(pfdsindex, this->ClientsMap.find(this->pfds[pfdsindex].fd)->second.getNICKNAME(), *it);
-//         } else {
-//             this->PRIVMSG_messagToClient(pfdsindex, *it, msg);
-//         }
-//     }
-// }
+void    Server::PART_trigger(std::size_t pfdsindex, std::vector<std::vector<std::string> > args){
+    std::vector<std::string>    receivers = args[0];
+    std::string    msg = args[1][0];
+    for (std::vector<std::string>::iterator it = receivers.begin(); it != receivers.end();it++){
+        if (it->at(0) == '#'){
+            std::map<std::string, IRCChannel>::iterator chanl = this->ChannelsMap.find(*it);
+            if (chanl != this->ChannelsMap.end())
+                chanl->second.PART_messagToChannel(this->pfds[pfdsindex].fd, msg);
+            else
+                ERR_NOSUCHNICK(pfdsindex, this->ClientsMap.find(this->pfds[pfdsindex].fd)->second.getNICKNAME(), *it);
+        } else {
+            this->PART_messagToClient(pfdsindex, *it, msg);
+        }
+    }
+}
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
@@ -85,7 +85,7 @@ void    Server::PART_Handle(size_t pfdsindex, std::vector<std::string> args){
             try{
                 std::vector<std::vector<std::string> > cleanArgs = PART_parseArgs(args[1]);
                 std::cout << "Result size: " << cleanArgs[0].size() << std::endl;
-                // this->PRIVMSG_handdleMSG(pfdsindex, cleanArgs);
+                this->PART_trigger(pfdsindex, cleanArgs);
             }catch(const std::exception& e) {
                 std::string err = e.what();
                 std::cout << "exception cought: " << err << std::endl;
