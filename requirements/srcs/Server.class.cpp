@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/06/03 23:09:18 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/04 01:56:58 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -320,7 +320,7 @@ void Server::executecommand(size_t pfdsindex)
     else // command not found
     {
         if(MS[0] != "PING" && MS[0] != "PONG") // ignore PING AND PONG requests from limechat
-            ERR_CMDNOTFOUND(pfdsindex);    
+            ERR_CMDNOTFOUND(pfdsindex);
     }
 }
 

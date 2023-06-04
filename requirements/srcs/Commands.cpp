@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/03 22:24:11 by abellakr          #+#    #+#             */
-/*   Updated: 2023/06/03 23:12:17 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/04 01:58:09 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,10 +53,7 @@ void Server::nick(size_t pfdsindex)
 bool Server::quit(size_t pfdsindex)
 {
     if(MS.size() != 1)
-    {
-        ERR_NEEDMOREPARAMS(pfdsindex, MS[0]);
         return false; 
-    }
     else
     {
         // remove client from map
