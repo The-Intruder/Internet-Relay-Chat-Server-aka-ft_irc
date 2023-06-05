@@ -6,14 +6,13 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/25 16:39:06 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/04 01:56:58 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 
 #include "../ircserv.head.hpp"
-// static int counter = 0;
 Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
 {
     SetupServer();
@@ -297,11 +296,11 @@ void Server::executecommand(size_t pfdsindex)
     if(MS[0] == "BOT" || MS[0] == "bot") // bot
         bot(pfdsindex);
     else if(MS[0] == "NICK" || MS[0] == "nick") // nick 
-        std::cout << "NICK\n";
+        nick(pfdsindex);
     else if(MS[0] == "MODE" || MS[0] == "mode") // mode
         std::cout << "MODE\n";
-    else if(MS[0] == "QUIT" || MS[0] == "quit") // quit
-        std::cout << "QUIT\n";
+    else if((MS[0] == "QUIT" || MS[0] == "quit") && (quit(pfdsindex) == true)) // quit
+        return ;
     else if(MS[0] == "JOIN" || MS[0] == "join") // join
         this->HandleJOIN(pfdsindex, MS[1]);
     else if(MS[0] == "PART" || MS[0] == "part") // part
@@ -321,7 +320,7 @@ void Server::executecommand(size_t pfdsindex)
     else // command not found
     {
         if(MS[0] != "PING" && MS[0] != "PONG") // ignore PING AND PONG requests from limechat
-            ERR_CMDNOTFOUND(pfdsindex);    
+            ERR_CMDNOTFOUND(pfdsindex);
     }
 }
 
