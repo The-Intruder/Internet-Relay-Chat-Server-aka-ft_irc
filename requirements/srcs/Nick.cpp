@@ -6,17 +6,17 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/03 22:24:11 by abellakr          #+#    #+#             */
-/*   Updated: 2023/06/05 14:39:02 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/05 21:20:45 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../ircserv.head.hpp"
 
 void Server::nick(size_t pfdsindex)
-{
+{    
     if(MS.size() != 2)
     {
-        ERR_NEEDMOREPARAMS(pfdsindex, MS[0]);
+        ERR_CMDNOTFOUND(pfdsindex);
         return;   
     }
     else
@@ -36,6 +36,7 @@ void Server::nick(size_t pfdsindex)
             }
             if(it != ClientsMap.end())
             {
+                std::cout << "\ndebug1\n" << std::endl;
                 ERR_NICKNAMEINUSE(pfdsindex, MS[1]);
                 return;
             }
@@ -44,7 +45,15 @@ void Server::nick(size_t pfdsindex)
         }
         else
         {
-            ERR_ERRONEUSNICKNAME(pfdsindex, MS[1]);
+            if(MS[1] == ":")
+            {
+                ERR_BADARGUMENT(pfdsindex);
+            }
+            else
+            {
+                ERR_ERRONEUSNICKNAME(pfdsindex, MS[1]);
+            }
+            return;
         }  
     }
 }

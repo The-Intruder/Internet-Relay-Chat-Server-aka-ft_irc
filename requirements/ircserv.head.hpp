@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/06/03 23:03:53 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/05 18:59:37 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,7 +160,7 @@ class Server
         // commands
         void    bot(size_t pfdsindex);
         void    nick(size_t pfdsindex);
-        bool    quit(size_t pfdsindex);
+        void    quit(size_t pfdsindex);
 
         /*---------------------- Hssain-Part ------------------ */
         void HandleJOIN(size_t pfdsindex, std::string args);
