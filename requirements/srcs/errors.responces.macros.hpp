@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/09 13:19:28 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/16 22:02:46 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/05 21:18:59 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #define RPL_CREATED(pfdsindex, timeinfo){std::string message = ":IrcTheThreeMusketeers 003 This server was created " + timeinfo + "\n";writemessagetoclients(pfdsindex, message);}
 #define ERR_CMDNOTFOUND(pfdsindex){std::string message = ":IrcTheThreeMusketeers ERROR :command not found\n";writemessagetoclients(pfdsindex, message);}
 #define ERR_FLAGNOTFOUND(pfdsindex){std::string message = ":IrcTheThreeMusketeers ERROR :flag not found use -help\n";writemessagetoclients(pfdsindex, message);}
+#define ERR_BADARGUMENT(pfdsindex){std::string message = ":IrcTheThreeMusketeers ERROR :bad argument\n";writemessagetoclients(pfdsindex, message);}
 
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/06/04 01:56:58 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/05 19:13:24 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -299,8 +299,8 @@ void Server::executecommand(size_t pfdsindex)
         nick(pfdsindex);
     else if(MS[0] == "MODE" || MS[0] == "mode") // mode
         std::cout << "MODE\n";
-    else if((MS[0] == "QUIT" || MS[0] == "quit") && (quit(pfdsindex) == true)) // quit
-        return ;
+    else if(MS[0] == "QUIT" || MS[0] == "quit") // quit
+        quit(pfdsindex);
     else if(MS[0] == "JOIN" || MS[0] == "join") // join
         this->AddChannel(MS[1]);
     else if(MS[0] == "PART" || MS[0] == "part") // part
