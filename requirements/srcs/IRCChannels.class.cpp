@@ -1,14 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Channels.class.cpp                                 :+:      :+:    :+:   */
+/*   IRCChannels.class.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: haitkadi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: haitkadi <hssain.aitkadir@gmail.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/07 19:01:05 by haitkadi          #+#    #+#             */
-/*   Updated: 2023/05/07 19:01:10 by haitkadi         ###   ########.fr       */
+/*   Created: 2023/06/05 15:42:25 by haitkadi          #+#    #+#             */
+/*   Updated: 2023/06/05 15:42:26 by haitkadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+
 
 #include "../ircserv.head.hpp"
 
@@ -248,6 +250,36 @@ void    IRCChannel::leftChannel(int fd, std::string &msg){
         ERR_NOTONCHANNEL(fd, this->getChannelName());
     }
 }
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+void    IRCChannel::kickFromChan(int kickerFd, std::string &userToKick, std::string &comment){
+    int userToKickFd = 0;
+    std::map<int, Client>::iterator clientIt = this->_joinedUsers.begin();
+    while (clientIt != this->_joinedUsers.end()){
+        if (!clientIt->second.getNICKNAME().compare(userToKick))
+            userToKickFd = clientIt->first;
+        clientIt++;
+    }
+    if (!userToKickFd){
+         ERR_NOTONCHANNEL(kickerFd, userToKick);
+        return;
+    }
+    if (kickerFd == userToKickFd)
+        return;
+    if (this->_admins.find(kickerFd) != this->_admins.end()){
+        std::string cmnt = ":" + this->_joinedUsers.find(kickerFd)->second.getNICKNAME() \
+        + "!" + this->_joinedUsers.find(kickerFd)->second.getUSERNAME() + "@localhost.ip KICK " \
+        + this->getChannelName() + " " + userToKick + " " + comment + "\n";
+        for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
+            writeMessageToClient(i->first, cmnt);
+        }
+        this->_joinedUsers.erase(userToKickFd);
+    } else
+        ERR_CHANOPRIVSNEEDED(kickerFd, this->getChannelName());
+}
+
+
 
 /* -------------------------------------------------------------------------- */
 

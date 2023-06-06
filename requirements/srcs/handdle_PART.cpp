@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   handdle_PART.cpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: haitkadi <hssain.aitkadir@gmail.com>       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/06/05 15:42:05 by haitkadi          #+#    #+#             */
+/*   Updated: 2023/06/05 15:42:06 by haitkadi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../ircserv.head.hpp"
 
 /* -------------------------------------------------------------------------- */
@@ -37,12 +49,10 @@ std::vector<std::vector<std::string> >    PART_splitChannels(std::vector<std::st
 std::vector<std::vector<std::string> >    PART_parseArgs(std::string args){
     std::string token;
     std::vector<std::string> buffer;
-
-    stringTrim(args, " \r\t\n");
-    std::string::size_type colonPos = args.find(' ');
-    if (colonPos != std::string::npos) {
-        std::string token1 = args.substr(0, colonPos);
-        std::string token2 = args.substr(colonPos + 1);
+    std::string::size_type spacePos = args.find(' ');
+    if (spacePos != std::string::npos) {
+        std::string token1 = args.substr(0, spacePos);
+        std::string token2 = args.substr(spacePos + 1);
         stringTrim(token1, " \r\t\n");
         stringTrim(token2, " \r\t\n");
         if (!token1.empty())

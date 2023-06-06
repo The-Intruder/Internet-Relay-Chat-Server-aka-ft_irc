@@ -126,6 +126,7 @@ class IRCChannel {
         void        NOTICE_messagToChannel(int fd, std::string &msg);
         void        leftChannel(int fd, std::string &msg);
         void        sayGoodby(int fd, std::string &msg);
+        void        kickFromChan(int kickerFd, std::string &userToKick, std::string &comment);
 };
 
 class Server
@@ -179,6 +180,9 @@ class Server
         // PART
         void PART_Handle(size_t pfdsindex, std::vector<std::string> args);
         void PART_trigger(std::size_t pfdsindex, std::vector<std::vector<std::string> > args);
+        // KICK
+        void KICK_Handle(size_t pfdsindex, std::vector<std::string> args);
+        void KICK_trigger(std::size_t pfdsindex, std::vector<std::string> args);
         // Misc
         void removeChannel(std::string chName);
 };

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   errors.responces.macros.hpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: haitkadi <hssain.aitkadir@gmail.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/09 13:19:28 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/16 22:02:46 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/05 15:43:57 by haitkadi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,5 +72,16 @@
 
 #define ERR_NOSUCHCHANNEL(pfdsindex, chName){std::string message = ":IrcTheThreeMusketeers 403 " + chName + " :No such channel\n";writemessagetoclients(pfdsindex, message);}
 #define ERR_NOTONCHANNEL(fd, chName){std::string message = ":IrcTheThreeMusketeers 442 " + chName + " :You're not on that channel\n";writeMessageToClient(fd, message);}
+
+
+
+/*
+           ERR_NEEDMOREPARAMS              ERR_NOSUCHCHANNEL
+           ERR_CHANOPRIVSNEEDED            ERR_NOTONCHANNEL
+*/
+
+
+#define ERR_CHANOPRIVSNEEDED(fd, chName){std::string message = ":IrcTheThreeMusketeers 482 " + chName + " You're not channel operator\n";writeMessageToClient(fd, message);}
+
 
 #endif

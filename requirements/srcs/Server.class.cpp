@@ -310,7 +310,7 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "INVITE" || MS[0] == "invite") // invite
         std::cout << "invite\n";
     else if(MS[0] == "KICK" || MS[0] == "kick") // kick
-        std::cout << "kick\n";
+        this->KICK_Handle(pfdsindex, MS);
     else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg") // privmsg
         this->PRIVMSG_Handle(pfdsindex, MS);
     else if(MS[0] == "NOTICE" || MS[0] == "notice") // notice
