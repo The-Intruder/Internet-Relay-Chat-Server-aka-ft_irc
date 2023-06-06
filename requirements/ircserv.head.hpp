@@ -117,10 +117,16 @@ class IRCChannel {
         std::string getChannelPass() const;
         void        setClientPass(std::string channel_pass);
         std::string getChannelTopic() const;
+        bool        empty() const;
         void        addAdmin(int fd);
         void        joinChannel(Client &client, std::string &chPass, int fd);
         void        notifyUsers(int fd);
         void        welcomeUser(int fd);
+        void        PRIVMSG_messagToChannel(int fd, std::string &msg);
+        void        NOTICE_messagToChannel(int fd, std::string &msg);
+        void        leftChannel(int fd, std::string &msg);
+        void        sayGoodby(int fd, std::string &msg);
+        void        kickFromChan(int kickerFd, std::string &userToKick, std::string &comment);
 };
 
 class Server
@@ -128,7 +134,7 @@ class Server
     private:
         int PORT; // argument port
         std::string PASSWORD; // password of the server
-        int servsockfd; // socket file descriptor of the server
+        int servsockfd; // socket file descriptor of the server0
         struct sockaddr_in ServAddr; // socket address of the server
         std::vector<pollfd> pfds; // file descriptors to keep eyes on 
         std::map<int,Client>  ClientsMap; // clients map
@@ -163,12 +169,40 @@ class Server
         void    quit(size_t pfdsindex);
 
         /*---------------------- Hssain-Part ------------------ */
+        /*----------- Anything related to channels and messages ------------- */
         void HandleJOIN(size_t pfdsindex, std::string args);
+        // JOIN
+        void HandleJOIN(size_t pfdsindex, std::vector<std::string> args);
         void addChannel(int fd, std::string chName, std::string chPass);
-        void RemoveChannel();
+        // PRIVMSG
+        void PRIVMSG_Handle(size_t pfdsindex, std::vector<std::string> args);
+        void PRIVMSG_handdleMSG(std::size_t pfdsindex, std::vector<std::vector<std::string> > args);
+        void PRIVMSG_messagToClient(std::size_t pfdsindex, std::string &clientNick, std::string &msg);
+        // NOTICE
+        void NOTICE_Handle(size_t pfdsindex, std::vector<std::string> args);
+        void NOTICE_handdleMSG(std::size_t pfdsindex, std::vector<std::vector<std::string> > args);
+        void NOTICE_messagToClient(std::size_t pfdsindex, std::string &clientNick, std::string &msg);
+        // PART
+        void PART_Handle(size_t pfdsindex, std::vector<std::string> args);
+        void PART_trigger(std::size_t pfdsindex, std::vector<std::vector<std::string> > args);
+        // KICK
+        void KICK_Handle(size_t pfdsindex, std::vector<std::string> args);
+        void KICK_trigger(std::size_t pfdsindex, std::vector<std::string> args);
+        // Misc
+        void removeChannel(std::string chName);
 };
 
 /* -------------------------------------------------------------------------- */
-void    writemessagetoclients(int fd, std::string message);
+// Misc functions
+void    writeMessageToClient(int fd, std::string message);
+
+
+
+/* -------------------------------------------------------------------------- */
+// PRIVMSG_NOTICE_utils
+void                                    stringTrim(std::string &str, const char *to_trim);
+std::string                             is_duplicate(std::vector<std::string> receivers);
+std::vector<std::vector<std::string> >  finalData(std::vector<std::string> buffer);
+std::vector<std::vector<std::string> >  parseArgs(std::string args);
 
 #endif
