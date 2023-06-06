@@ -33,7 +33,6 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
                 Client& tmp = it->second;
                 if(it != ClientsMap.end() && tmp.getAuthenticated() == true)
                     tmp.setfirstATH(true);
-                
             }
         }
     }
@@ -124,7 +123,7 @@ void Server::HandleConnections(size_t pfdsindex)
         else
             tmp.setbuffer(tmp.getbuffer() + bufferobj);        
         std::stringstream stream(tmp.getbuffer());
-        std::string token;
+        std::string token;    
         while(std::getline(stream , token, '\n'))
         {
             MS.clear();
@@ -302,28 +301,25 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "QUIT" || MS[0] == "quit") // quit
         quit(pfdsindex);
     else if(MS[0] == "JOIN" || MS[0] == "join") // join
-        this->HandleJOIN(pfdsindex, MS[1]);
+        this->HandleJOIN(pfdsindex, MS);
     else if(MS[0] == "PART" || MS[0] == "part") // part
-        std::cout << "part\n";
-    else if(MS[0] == "TOPIC" || MS[0] == "topic") // part 
+        this->PART_Handle(pfdsindex, MS);
+    else if(MS[0] == "TOPIC" || MS[0] == "topic") // topic 
         std::cout << "topic\n";
-    else if(MS[0] == "NAMES" || MS[0] == "names") // names
-        std::cout << "names\n";
     else if(MS[0] == "INVITE" || MS[0] == "invite") // invite
         std::cout << "invite\n";
     else if(MS[0] == "KICK" || MS[0] == "kick") // kick
-        std::cout << "kick\n";
+        this->KICK_Handle(pfdsindex, MS);
     else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg") // privmsg
-        std::cout << "privmsg\n";
+        this->PRIVMSG_Handle(pfdsindex, MS);
     else if(MS[0] == "NOTICE" || MS[0] == "notice") // notice
-        std::cout << "notice\n";
+        this->NOTICE_Handle(pfdsindex, MS);
     else // command not found
     {
         if(MS[0] != "PING" && MS[0] != "PONG") // ignore PING AND PONG requests from limechat
             ERR_CMDNOTFOUND(pfdsindex);
     }
 }
-
 
 long	Server::ft_gettime(void)
 {
@@ -332,3 +328,4 @@ long	Server::ft_gettime(void)
 	gettimeofday(&current_time, NULL);
 	return (current_time.tv_sec);
 }
+
