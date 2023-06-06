@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/11 12:00:02 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/25 11:27:16 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/07 00:10:03 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@ void Server::bot(size_t pfdsindex)
     {
         writemessagetoclients(pfdsindex, ":IrcTheThreeMusketeers NOTICE limechat :use -logtime to get your logtime at the server\n");
         writemessagetoclients(pfdsindex, ":IrcTheThreeMusketeers NOTICE limechat :use -commands to get commands to use in this server\n");
-        writemessagetoclients(pfdsindex, ":IrcTheThreeMusketeers NOTICE limechat :use -logtime to get your logtime on the server\n");
     }
     else if(MS[1] == "-commands")
     {
