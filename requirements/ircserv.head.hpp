@@ -130,6 +130,7 @@ class IRCChannel {
         bool        isClientOnChan(int fd);
         void        sendTopicToClient(int fd);
         void        changeTopic(int fd, std::string &topic);
+        void        removeUser(int fd);
 };
 
 class Server
@@ -195,6 +196,7 @@ class Server
         void TOPIC_Handle(std::size_t pfdsindex, std::vector<std::string> args);
         void TOPIC_trigger(std::size_t pfdsindex, std::vector<std::string> args);
         // Misc
+        void removeClientFromChans(int fd);
         void removeChannel(std::string chName);
 };
 

@@ -37,4 +37,18 @@ void Server::removeChannel(std::string chName){
         this->ChannelsMap.erase(channelIt);
     }
 }
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+void    Server::removeClientFromChans(int fd){
+    std::map<std::string, IRCChannel>::iterator chan = this->ChannelsMap.begin();
+    for(; chan != this->ChannelsMap.end(); chan++){
+        if (chan->second.isClientOnChan(fd)){
+            chan->second.removeUser(fd);
+            if (chan->second.empty()){
+                removeChannel(chan->second.getChannelName());
+            }
+        }
+    }
+}
+
 /* -------------------------------------------------------------------------- */

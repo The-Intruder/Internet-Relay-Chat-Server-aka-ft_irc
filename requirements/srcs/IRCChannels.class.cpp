@@ -306,6 +306,17 @@ void    IRCChannel::changeTopic(int fd, std::string &topic){
         this->_topic = topic;
     }
 }
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+void    IRCChannel::removeUser(int fd){
+    std::map<int, Client>::iterator clientIt = this->_joinedUsers.find(fd);
+    if (clientIt != this->_joinedUsers.end()){
+        this->_joinedUsers.erase(clientIt);
+        std::map<int, Client>::iterator adminIt = this->_admins.find(fd);
+        if (adminIt != this->_admins.end())
+            this->_admins.erase(adminIt);
+    }
+}
 
 /* -------------------------------------------------------------------------- */
 

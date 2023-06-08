@@ -14,6 +14,8 @@
 
 void Server::quit(size_t pfdsindex)
 {
+    // remove client from channel
+    this->removeClientFromChans(this->pfds[pfdsindex].fd);
     // remove client from map
     std::cout << "client disconnected sockfd: " << pfds[pfdsindex].fd << std::endl; 
     std::map<int,Client>::iterator itmap = ClientsMap.find(pfds[pfdsindex].fd);
@@ -23,5 +25,4 @@ void Server::quit(size_t pfdsindex)
     itvec += pfdsindex;
     close(pfds[pfdsindex].fd);
     pfds.erase(itvec);
-    // remove client from channel
 }
