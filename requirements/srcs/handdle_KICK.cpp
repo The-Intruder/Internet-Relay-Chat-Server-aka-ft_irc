@@ -72,7 +72,7 @@ void    Server::KICK_trigger(std::size_t pfdsindex, std::vector<std::string> arg
 
 void    Server::KICK_Handle(size_t pfdsindex, std::vector<std::string> args){
     if (args.size() > 1) {
-        stringTrim(args[1], " \r\t\n");
+        stringTrim(args[1], " :\r\t\n");
         if (!args[1].empty()){
             try{
                 std::vector<std::string> kickArgs = KICK_parseArgs(args[1]);

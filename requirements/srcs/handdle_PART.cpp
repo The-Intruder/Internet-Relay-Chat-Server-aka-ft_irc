@@ -86,7 +86,7 @@ void    Server::PART_trigger(std::size_t pfdsindex, std::vector<std::vector<std:
 
 void    Server::PART_Handle(size_t pfdsindex, std::vector<std::string> args){
     if (args.size() > 1) {
-        stringTrim(args[1], " \r\t\n");
+        stringTrim(args[1], " :\r\t\n");
         if (!args[1].empty()){
             try{
                 std::vector<std::vector<std::string> > cleanArgs = PART_parseArgs(args[1]);

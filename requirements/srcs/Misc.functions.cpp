@@ -13,6 +13,13 @@
 #include "../ircserv.head.hpp"
 
 /* -------------------------------------------------------------------------- */
+
+void    stringTrim(std::string &str, const char *to_trim){
+    str.erase(0, str.find_first_not_of(to_trim));
+    str.erase(str.find_last_not_of(to_trim)+1);
+}
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 void    writeMessageToClient(int fd, std::string message)
 {
     int valwrite = write(fd, message.c_str() ,message.length());
@@ -30,3 +37,4 @@ void Server::removeChannel(std::string chName){
         this->ChannelsMap.erase(channelIt);
     }
 }
+/* -------------------------------------------------------------------------- */

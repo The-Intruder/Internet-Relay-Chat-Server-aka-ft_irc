@@ -14,12 +14,6 @@
 
 /* -------------------------------------------------------------------------- */
 
-void    stringTrim(std::string &str, const char *to_trim){
-    str.erase(0, str.find_first_not_of(to_trim));                                                                                               
-    str.erase(str.find_last_not_of(to_trim)+1);
-}
-
-/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
 std::string    is_duplicate(std::vector<std::string> receivers){
     sort(receivers.begin(), receivers.end());

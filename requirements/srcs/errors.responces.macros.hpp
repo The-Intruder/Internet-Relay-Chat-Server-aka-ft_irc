@@ -40,8 +40,6 @@
 #define ERR_INVITEONLYCHAN(fd, chName){std::string message = ":IrcTheThreeMusketeers 473 " + chName + " :Cannot join channel (+i)\n";writeMessageToClient(fd, message);}
 #define ERR_BADCHANNELKEY(fd, chName){std::string message = ":IrcTheThreeMusketeers 475 " + chName + " :Cannot join channel (+k)\n";writeMessageToClient(fd, message);}
 #define ERR_CHANNELISFULL(fd, chName){std::string message = ":IrcTheThreeMusketeers 471 " + chName + " :Cannot join channel (+l)\n";writeMessageToClient(fd, message);}
-// #define RPL_TOPIC(fd, chName, topic){std::string message = ":IrcTheThreeMusketeers 332 " + chName + " : " + topic + "\n"; writemessagetoclients(fd, message);}
-// #define RPL_NOTOPIC(fd, chName){std::string message = ":IrcTheThreeMusketeers 331 " + chName + " : No topic is set\n"; writemessagetoclients(fd, message);}
 #define RPL_NAMREPLY(fd, nickName,  chName, members){std::string message = ":IrcTheThreeMusketeers 353 " + nickName + " = " + chName + " :" + members + "\n"; writeMessageToClient(fd, message);}
 #define RPL_ENDOFNAMES(fd, nickName,  chName){std::string message = ":IrcTheThreeMusketeers 366 " + nickName + " " + chName + " :End of /NAMES list\n"; writeMessageToClient(fd, message);}
 
@@ -61,7 +59,7 @@
 #define ERR_NORECIPIENT(pfdsindex, nickName){std::string message = ":IrcTheThreeMusketeers 411 " + nickName + " :No recipient given (PRIVMSG)\n";writemessagetoclients(pfdsindex, message);}
 #define ERR_NOTEXTTOSEND(pfdsindex, nickName){std::string message = ":IrcTheThreeMusketeers 412 " + nickName + " :No text to send\n";writemessagetoclients(pfdsindex, message);}
 #define ERR_TOOMANYTARGETS(pfdsindex, err){std::string message = ":IrcTheThreeMusketeers 407 " + err + " :Duplicate recipients. No message delivered\n";writemessagetoclients(pfdsindex, message);}
-#define ERR_NOSUCHNICK(pfdsindex, sender, receiver){std::string message = ":IrcTheThreeMusketeers 401 " + sender + " " + receiver + " :No such nick/channel\n";writemessagetoclients(pfdsindex, message);}
+#define ERR_NOSUCHNICK(pfdsindex, receiver){std::string message = ":IrcTheThreeMusketeers 401 " + receiver + " :No such nick/channel\n";writemessagetoclients(pfdsindex, message);}
 #define ERR_CANNOTSENDTOCHAN(fd, chName){std::string message = ":IrcTheThreeMusketeers 404 " + chName + " :Cannot send to channel\n";writeMessageToClient(fd, message);}
 
 
@@ -84,5 +82,13 @@
 
 #define ERR_CHANOPRIVSNEEDED(fd, chName){std::string message = ":IrcTheThreeMusketeers 482 " + chName + " You're not channel operator\n";writeMessageToClient(fd, message);}
 
+
+/*
+           ERR_NEEDMOREPARAMS              ERR_NOTONCHANNEL
+           RPL_NOTOPIC                     RPL_TOPIC
+           ERR_CHANOPRIVSNEEDED
+*/
+#define RPL_TOPIC(fd, chName, topic){std::string message = ":IrcTheThreeMusketeers 332 " + chName + " :" + topic + "\n"; writeMessageToClient(fd, message);}
+#define RPL_NOTOPIC(fd, chName){std::string message = ":IrcTheThreeMusketeers 331 " + chName + " :No topic is set\n"; writeMessageToClient(fd, message);}
 
 #endif

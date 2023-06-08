@@ -29,7 +29,7 @@ void    Server::PRIVMSG_messagToClient(std::size_t pfdsindex, std::string &clien
     if (it != this->ClientsMap.end()){
         writeMessageToClient(it->first, fullMsg);
     } else {
-        ERR_NOSUCHNICK(pfdsindex, sender.getNICKNAME(), clientNick);
+        ERR_NOSUCHNICK(pfdsindex, clientNick);
     }
 }
 
@@ -44,7 +44,7 @@ void    Server::PRIVMSG_handdleMSG(std::size_t pfdsindex, std::vector<std::vecto
             if (chanl != this->ChannelsMap.end())
                 chanl->second.PRIVMSG_messagToChannel(this->pfds[pfdsindex].fd, msg);
             else
-                ERR_NOSUCHNICK(pfdsindex, this->ClientsMap.find(this->pfds[pfdsindex].fd)->second.getNICKNAME(), *it);
+                ERR_NOSUCHNICK(pfdsindex, *it);
         } else {
             this->PRIVMSG_messagToClient(pfdsindex, *it, msg);
         }
@@ -56,7 +56,7 @@ void    Server::PRIVMSG_handdleMSG(std::size_t pfdsindex, std::vector<std::vecto
 void    Server::PRIVMSG_Handle(size_t pfdsindex, std::vector<std::string> args){
     std::string nickName = this->ClientsMap.find(pfds[pfdsindex].fd)->second.getNICKNAME();
     if (args.size() > 1) {
-        stringTrim(args[1], " \r\t\n");
+        stringTrim(args[1], " :\r\t\n");
         if (!args[1].empty()){
             try{
                 std::vector<std::vector<std::string> > cleanArgs = parseArgs(args[1]);

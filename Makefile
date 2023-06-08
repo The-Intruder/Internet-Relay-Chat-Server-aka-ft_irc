@@ -34,7 +34,7 @@ SRCS_DIR := requirements/srcs/
 
 SRCS_LST := Server.class.cpp Clients.class.cpp  IRCChannels.class.cpp handdle_JOIN.cpp \
 			Bot.cpp Misc.functions.cpp PRIVMSG_NOTICE_utils.cpp handdle_PRIVMSG.cpp \
-			handdle_NOTICE.cpp handdle_PART.cpp handdle_KICK.cpp Quit.cpp Nick.cpp
+			handdle_NOTICE.cpp handdle_PART.cpp handdle_KICK.cpp handdle_TOPIC.cpp Quit.cpp Nick.cpp 
 SRCS := ${addprefix ${SRCS_DIR}, ${SRCS_LST}}
 
 OBJS_DIR := requirements/objs/

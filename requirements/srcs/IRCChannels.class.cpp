@@ -279,7 +279,33 @@ void    IRCChannel::kickFromChan(int kickerFd, std::string &userToKick, std::str
         ERR_CHANOPRIVSNEEDED(kickerFd, this->getChannelName());
 }
 
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
+bool    IRCChannel::isClientOnChan(int fd){
+    return this->_joinedUsers.find(fd) != this->_joinedUsers.end();
+}
+
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+void    IRCChannel::sendTopicToClient(int fd){
+    if(!this->getChannelTopic().empty()){
+        RPL_TOPIC(fd, this->getChannelName(), this->getChannelTopic());
+    } else
+        RPL_NOTOPIC(fd, this->getChannelName());
+}
+
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+void    IRCChannel::changeTopic(int fd, std::string &topic){
+    if(this->isOnlyOpsChangeTopic()){
+        if(this->_admins.find(fd) != this->_admins.end()){
+            this->_topic = topic;
+        }else
+            ERR_CHANOPRIVSNEEDED(fd, this->getChannelName());
+    }else {
+        this->_topic = topic;
+    }
+}
 
 /* -------------------------------------------------------------------------- */
 

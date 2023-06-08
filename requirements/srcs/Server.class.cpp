@@ -305,7 +305,7 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "PART" || MS[0] == "part") // part
         this->PART_Handle(pfdsindex, MS);
     else if(MS[0] == "TOPIC" || MS[0] == "topic") // topic 
-        std::cout << "topic\n";
+        this->TOPIC_Handle(pfdsindex, MS);
     else if(MS[0] == "INVITE" || MS[0] == "invite") // invite
         std::cout << "invite\n";
     else if(MS[0] == "KICK" || MS[0] == "kick") // kick
