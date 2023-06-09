@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/06/09 11:41:36 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/09 11:59:35 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,8 +107,6 @@ void Server::HandleConnections(size_t pfdsindex)
     }
     else if(valread > 0)
     {
-        std::cout << buffer << std::endl;
-        std::cout << "\n---------------------------------------\n";
         std::map<int,Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
         Client& tmp = it->second;
         size_t pos = 0;
