@@ -42,10 +42,16 @@
 
 typedef struct s_parsedModeCommand
 {
-    std::string                 channel_name;
-    std::vector<std::string>    mode;
-    std::string                 parameter;
+    std::string    channel_name;
+    std::string    mode;
+    std::string    parameter;
 }   t_parsedModeCommand;
+
+typedef struct s_parsedInviteCommand
+{
+    std::string    nickname;
+    std::string    channel_name;
+}   t_parsedInviteCommand;
 
 /* -------------------------------- CLASSES --------------------------------- */
 
@@ -186,7 +192,8 @@ class Server
         void    addChannel(int fd, std::string chName, std::string chPass);
         void    RemoveChannel();
 
-        void    executeModeCommand(std::string command);
+        void    executeModeCommand(size_t pfdsindex, std::vector<std::string> &full_cmd);
+        void    executeInviteCommand(size_t pfdsindex, std::vector<std::string> &full_cmd)
 };
 
 /* -------------------------------- PROTOTYPES ------------------------------ */

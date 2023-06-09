@@ -28,11 +28,11 @@
 // JOIN ERRS and RPL
 
 /*
-           ERR_NEEDMOREPARAMS              ERR_BANNEDFROMCHAN
-           ERR_INVITEONLYCHAN              ERR_BADCHANNELKEY
-           ERR_CHANNELISFULL               ERR_BADCHANMASK
-           ERR_NOSUCHCHANNEL               ERR_TOOMANYCHANNELS
-           RPL_TOPIC
+    ERR_NEEDMOREPARAMS              ERR_BANNEDFROMCHAN
+    ERR_INVITEONLYCHAN              ERR_BADCHANNELKEY
+    ERR_CHANNELISFULL               ERR_BADCHANMASK
+    ERR_NOSUCHCHANNEL               ERR_TOOMANYCHANNELS
+    RPL_TOPIC
 */
 
 #define ERR_INVALIDCHNLNAME(pfdsindex, chName){std::string message = ":IrcTheThreeMusketeers ERROR :invalid channel name: " + chName + "\n";writemessagetoclients(pfdsindex, message);}
@@ -42,4 +42,29 @@
 #define RPL_TOPIC(fd, chName, topic){std::string message = ":IrcTheThreeMusketeers 332 " + chName + " : " + topic + "\n"; writemessagetoclients(fd, message);}
 #define RPL_NOTOPIC(fd, chName){std::string message = ":IrcTheThreeMusketeers 331 " + chName + " : No topic is set\n"; writemessagetoclients(fd, message);}
 
+/* ------------------------------ MODE_ERRORS ------------------------------- */
+# define ERR_KEYSET(pfdsindex, chName) {std::string message = ":IrcTheThreeMusketeers 467 " + chName + " :Channel key already set\n"; writemessagetoclients(pfdsindex, message);}
+# define ERR_CHANOPRIVSNEEDED(pfdsindex, chName) {std::string message = ":IrcTheThreeMusketeers 482 " + chName + " :You're not channel operator\n"; writemessagetoclients(pfdsindex, message);}
+# define ERR_USERNOTINCHANNEL(pfdsindex, nick, chName) {std::string message = ":IrcTheThreeMusketeers 441 " + nick + " " + chName + " :They aren't on that channel\n"; writemessagetoclients(pfdsindex, message);}
+# define ERR_UNKNOWNMODE(pfdsindex, theChar, chName) {std::string message = ":IrcTheThreeMusketeers 472 " + theChar + " :is unknown mode char to me for " + chName + "\n"; writemessagetoclients(pfdsindex, message);}
+
+# define RPL_CHANNELMODEIS(pfdsindex, mode, modeParams) {std::string message = ":IrcTheThreeMusketeers 324 " + chName + " " + mode + " " + modeParams + "\n"; writemessagetoclients(pfdsindex, message);}
+
+# define ERR_NOCHANMODES(pfdsindex, chName) {std::string message = ":IrcTheThreeMusketeers 477 " + chName + " :Channel doesn't support modes\n"; writemessagetoclients(pfdsindex, message);}
+
+/*
+# define RPL_BANLIST(pfdsindex, chName, banMask) {std::string message = ":IrcTheThreeMusketeers 367 " + chName + " " + banMask + "\n"; writemessagetoclients(pfdsindex, message);}
+# define RPL_ENDOFBANLIST(pfdsindex, chName) {std::string message = ":IrcTheThreeMusketeers 368 " + chName + " :End of channel ban list\n"; writemessagetoclients(pfdsindex, message);}
+# define RPL_EXCEPTLIST(pfdsindex, chName, exceptionMask) {std::string message = ":IrcTheThreeMusketeers 348 " +  chName + " " + exceptionmask + "\n"; writemessagetoclients(pfdsindex, message);}
+# define RPL_ENDOFEXCEPTLIST(pfdsindex, chName) {std::string message = ":IrcTheThreeMusketeers 349 " + chName + " :End of channel exception list\n"; writemessagetoclients(pfdsindex, message);}
+# define RPL_INVITELIST(pfdsindex, chName, inviteMask) {std::string message = ":IrcTheThreeMusketeers 461 " + chName + " " + inviteMask + "\n"; writemessagetoclients(pfdsindex, message);}
+# define RPL_ENDOFINVITELIST(pfdsindex, chName) {std::string message = ":IrcTheThreeMusketeers 347 " + chName + " :End of channel invite list\n"; writemessagetoclients(pfdsindex, message);}
+# define RPL_UNIQOPIS(pfdsindex, chName, nick) {std::string message = ":IrcTheThreeMusketeers 325 " + chName + " " + nick + "\n"; writemessagetoclients(pfdsindex, message);}
+*/
+
+
 #endif
+
+
+
+

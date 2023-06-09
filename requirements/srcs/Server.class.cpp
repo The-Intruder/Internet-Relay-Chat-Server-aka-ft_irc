@@ -299,7 +299,7 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "NICK" || MS[0] == "nick")         // nick 
         std::cout << "NICK\n";
     else if(MS[0] == "MODE" || MS[0] == "mode")         // mode
-        executeModeCommand(MS[1]);
+        executeModeCommand(pfdsindex, MS);
     else if(MS[0] == "QUIT" || MS[0] == "quit")         // quit
         std::cout << "QUIT\n";
     else if(MS[0] == "JOIN" || MS[0] == "join")         // join
@@ -311,7 +311,7 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "NAMES" || MS[0] == "names")       // names
         std::cout << "names\n";
     else if(MS[0] == "INVITE" || MS[0] == "invite")     // invite
-        std::cout << "invite\n";
+        executeInviteCommand(pfdsindex, MS);
     else if(MS[0] == "KICK" || MS[0] == "kick")         // kick
         std::cout << "kick\n";
     else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg")   // privmsg
