@@ -6,14 +6,13 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/25 10:08:08 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/09 12:17:03 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 
 #include "../ircserv.head.hpp"
-// static int counter = 0;
 Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
 {
     SetupServer();
@@ -30,11 +29,13 @@ Server::Server(int PORT, std::string PASSWORD) : PORT(PORT) , PASSWORD(PASSWORD)
             else if(pfds[i].revents & POLLIN)
             {
                 HandleConnections(i);
-                std::map<int,Client>::iterator it = ClientsMap.find(pfds[i].fd);
-                Client& tmp = it->second;
-                if(it != ClientsMap.end() && tmp.getAuthenticated() == true)
-                    tmp.setfirstATH(true);
-                
+                if(i < pfds.size())
+                {
+                    std::map<int,Client>::iterator it = ClientsMap.find(pfds[i].fd);
+                    Client& tmp = it->second;
+                    if(it != ClientsMap.end() && tmp.getAuthenticated() == true)
+                        tmp.setfirstATH(true);
+                }
             }
         }
     }
@@ -97,6 +98,8 @@ void Server::HandleConnections(size_t pfdsindex)
     else if(valread == 0)
     {
         std::cout << "client disconnected sockfd: " << pfds[pfdsindex].fd << std::endl; 
+        // remove client from channel
+        this->removeClientFromChans(this->pfds[pfdsindex].fd);
         // remove client from map
         std::map<int,Client>::iterator itmap = ClientsMap.find(pfds[pfdsindex].fd);
         ClientsMap.erase(itmap);
@@ -104,7 +107,6 @@ void Server::HandleConnections(size_t pfdsindex)
         std::vector<pollfd>::iterator itvec = pfds.begin();
         itvec += pfdsindex;
         pfds.erase(itvec);
-        // remove client from channel
     }
     else if(valread > 0)
     {
@@ -125,7 +127,7 @@ void Server::HandleConnections(size_t pfdsindex)
         else
             tmp.setbuffer(tmp.getbuffer() + bufferobj);        
         std::stringstream stream(tmp.getbuffer());
-        std::string token;
+        std::string token;    
         while(std::getline(stream , token, '\n'))
         {
             MS.clear();
@@ -199,7 +201,7 @@ void Server::checknick(size_t pfdsindex, Client& client)
     }
     else if((MSATH[0] == "NICK" || MSATH[0] == "nick") && client.getVN() == false && client.getVP() == true)
     {
-        if((MSATH[1][0] > 'a' && MSATH[1][0] < 'z') || (MSATH[1][0] > 'A' && MSATH[1][0] < 'Z'))
+        if((MSATH[1][0] >='a' && MSATH[1][0] <= 'z') || (MSATH[1][0] >= 'A' && MSATH[1][0] <= 'Z'))
         {
             std::map<int, Client>::iterator it = ClientsMap.begin();
             while(it != ClientsMap.end())
@@ -255,7 +257,7 @@ void Server::checkuser(size_t pfdsindex, Client& client)
     }
 }
 
-void Server::writemessagetoclients(size_t pfdsindex, std::string message)
+void Server::writeMessageToClient(size_t pfdsindex, std::string message)
 {
     int valwrite = write(pfds[pfdsindex].fd, message.c_str() ,message.length());
     if(valwrite < 0)
@@ -270,9 +272,9 @@ Server::~Server()
 void Server::splitargs()
 {
     MSATH.clear();
+    MSATH.push_back(MS[0]);
     if(MS.size() > 1)
     {
-        MSATH.push_back(MS[0]);
         std::string tmp = MS[1];
         std::istringstream iss(tmp);
         std::string substring;
@@ -296,35 +298,32 @@ void Server::executecommand(size_t pfdsindex)
 {
     if(MS[0] == "BOT" || MS[0] == "bot")                // bot
         bot(pfdsindex);
-    else if(MS[0] == "NICK" || MS[0] == "nick")         // nick 
-        std::cout << "NICK\n";
-    else if(MS[0] == "MODE" || MS[0] == "mode")         // mode
+    else if(MS[0] == "NICK" || MS[0] == "nick") // nick 
+        nick(pfdsindex);
+    else if(MS[0] == "MODE" || MS[0] == "mode") // mode
         executeModeCommand(pfdsindex, MS);
-    else if(MS[0] == "QUIT" || MS[0] == "quit")         // quit
-        std::cout << "QUIT\n";
-    else if(MS[0] == "JOIN" || MS[0] == "join")         // join
-        HandleJOIN(pfdsindex, MS[1]);
-    else if(MS[0] == "PART" || MS[0] == "part")         // part
-        std::cout << "part\n";
-    else if(MS[0] == "TOPIC" || MS[0] == "topic")       // part 
-        std::cout << "topic\n";
-    else if(MS[0] == "NAMES" || MS[0] == "names")       // names
-        std::cout << "names\n";
-    else if(MS[0] == "INVITE" || MS[0] == "invite")     // invite
+    else if(MS[0] == "QUIT" || MS[0] == "quit") // quit
+        quit(pfdsindex);
+    else if(MS[0] == "JOIN" || MS[0] == "join") // join
+        this->HandleJOIN(pfdsindex, MS);
+    else if(MS[0] == "PART" || MS[0] == "part") // part
+        this->PART_Handle(pfdsindex, MS);
+    else if(MS[0] == "TOPIC" || MS[0] == "topic") // topic 
+        this->TOPIC_Handle(pfdsindex, MS);
+    else if(MS[0] == "INVITE" || MS[0] == "invite") // invite
         executeInviteCommand(pfdsindex, MS);
-    else if(MS[0] == "KICK" || MS[0] == "kick")         // kick
-        std::cout << "kick\n";
-    else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg")   // privmsg
-        std::cout << "privmsg\n";
-    else if(MS[0] == "NOTICE" || MS[0] == "notice")     // notice
-        std::cout << "notice\n";
+    else if(MS[0] == "KICK" || MS[0] == "kick") // kick
+        this->KICK_Handle(pfdsindex, MS);
+    else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg") // privmsg
+        this->PRIVMSG_Handle(pfdsindex, MS);
+    else if(MS[0] == "NOTICE" || MS[0] == "notice") // notice
+        this->NOTICE_Handle(pfdsindex, MS);
     else // command not found
     {
         if(MS[0] != "PING" && MS[0] != "PONG") // ignore PING AND PONG requests from limechat
-            ERR_CMDNOTFOUND(pfdsindex);    
+            ERR_CMDNOTFOUND(pfdsindex);
     }
 }
-
 
 long	Server::ft_gettime(void)
 {
@@ -334,4 +333,3 @@ long	Server::ft_gettime(void)
 	return (current_time.tv_sec);
 }
 
-/* ************************************************************************** */

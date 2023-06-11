@@ -9,64 +9,51 @@
 
 /* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
 
-static t_parsedModeCommand  parseModeCommand(std::string const &command, size_t pfdsindex)
+static t_parsedModeCommand  parseModeCommand(Server *class_ptr, std::string const &command, size_t pfdsindex)
 {
     t_parsedModeCommand    parsedCommand;
     std::string::size_type pos = 0;
 
-    // Check if the channel name is the only thing in the passed command
     pos = command.find(' ');
     if (pos == std::string::npos)
     {
-        ERR_NEEDMOREPARAMS(pfdsindex, command[0]);
-        throw std::runtime_error("");
+        ERR_NEEDMOREPARAMS(class_ptr->pfds[pfdsindex].fd, command);
+        throw std::runtime_error("Error: mode command");
     }
-
-    // Parsing the channel_name itself
-    if (command[1] == '#')
-        parsedCommand.channel_name = command.substr(1, pos - 1);
-    else
-        parsedCommand.channel_name = command.substr(0, pos);
-
-    // Skipping all the space characters
-    while ( pos < command.length() && command[pos] == ' ')
+    parsedCommand.channel_name = command.substr(0, pos);
+    std::cout << parsedCommand.channel_name << std::endl;
+    while (pos < command.length() && command[pos] == ' ')
         pos++;
-
-    // check if there is nothing after the channel_name
-    pos = command.find(' ', pos);
-    if (pos + 1 >= command.length())
+    if (pos == std::string::npos || pos >= command.length() || pos + 1 >= command.length())
     {
-        ERR_NEEDMOREPARAMS(pfdsindex, command[0]);
-        throw std::runtime_error("");
+        ERR_NEEDMOREPARAMS(class_ptr->pfds[pfdsindex].fd, command);
+        throw std::runtime_error("Error: mode command");
     }
-
-    if ((command[pos + 1] == '+' || command[pos + 1] == '-') && pos + 2 < command.length())
+    if ((command[pos] == '+' || command[pos] == '-') && pos + 1 < command.length())
     {
-        parsedCommand.mode += std::string(1, command[++pos]);
-        if (!std:isalpha(command[pos + 1]))
+        parsedCommand.mode = std::string(1, command[pos]);
+        if (!std::isalpha(command[pos + 1]))
         {
-            ERR_UNKNOWNMODE(pfdsindex, command[pos + 1], parsedCommand.channel_name);
-            throw std::runtime_error("");
+            ERR_UNKNOWNMODE(class_ptr->pfds[pfdsindex].fd, std::string(1, command[pos + 1]), parsedCommand.channel_name);
+            throw std::runtime_error("Error: mode command");
         }
         parsedCommand.mode += std::string(1, command[++pos]);
     }
-
     while (command[pos] == ' ' && pos < command.length())
         pos++;
-    if (command[pos] == ':')
-        parsedCommand.parameter = command.substr(pos + 1);
-    else
+    if (pos < command.length())
     {
-
-        parsedCommand.parameter = command.substr(pos, command.find(' ', pos) - pos);
+        if (command[pos] == ':')
+            parsedCommand.parameter = command.substr(pos + 1);
+        else
+            parsedCommand.parameter = command.substr(pos);
     }
-
     return (parsedCommand);
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
 
-static std::pair<const int, Client>     &getClient(std::map<int, Client> &ClientsMap, std::string nickname)
+static std::pair<const int, Client>     &getClient(Server *class_ptr, std::map<int, Client> &ClientsMap, std::string nickname, std::string channel_name, size_t pfdsindex)
 {
     std::map<int, Client>::iterator it = ClientsMap.begin();
 
@@ -78,8 +65,8 @@ static std::pair<const int, Client>     &getClient(std::map<int, Client> &Client
     }
     if (it == ClientsMap.end())
     {
-        ERR_USERNOTINCHANNEL(pfdsindex, nickname, parsedCommand.channel_name);
-        throw std::runtime_error("");
+        ERR_USERNOTINCHANNEL(class_ptr->pfds[pfdsindex].fd, nickname, channel_name);
+        throw std::runtime_error("Error: getClient");
     }
     return (*(it));
 }
@@ -91,7 +78,7 @@ static Channel   &getChannel(std::map<std::string, Channel> &Channels, std::stri
     std::map<std::string, Channel>::iterator it = Channels.find(channelName);
 
     if (it == Channels.end())
-        throw std::runtime_error("channel not found");
+        throw std::runtime_error("getChannel: channel not found");
     return (it->second);
 }
 
@@ -101,67 +88,61 @@ static void    setOperator(Server *class_ptr, bool add, size_t pfdsindex, t_pars
 {
     try
     {
-        std::pair<const int,Client>   &client = getClient(class_ptr->ClientsMap, parsedCommand.parameter);
+        std::pair<const int,Client>   &client = getClient(class_ptr, class_ptr->ClientsMap, parsedCommand.parameter, parsedCommand.channel_name, pfdsindex);
         Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
         if (add == true)
         {
-            channel._joinedClients.erase(client.first);
+            channel._joinedUsers.erase(client.first);
             channel._operators.insert(client);
         }
         else
         {
             channel._operators.erase(client.first);
-            channel._joinedClients.insert(client);
+            channel._joinedUsers.insert(client);
         }
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << std::endl;
     }
+    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
 
-static void     setVoiced(Server *class_ptr, bool add, , size_t pfdsindex, t_parsedModeCommand &parsedCommand)
+static void     setVoiced(Server *class_ptr, bool add, size_t pfdsindex, t_parsedModeCommand &parsedCommand)
 {
     try
     {
-        std::pair<const int,Client>   &client = getClient(class_ptr->ClientsMap, parsedCommand.parameter);
+        std::pair<const int,Client>   &client = getClient(class_ptr, class_ptr->ClientsMap, parsedCommand.parameter, parsedCommand.channel_name, pfdsindex);
         Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
         if (add == true)
         {
-            channel._joinedClients.erase(client.first);
+            channel._joinedUsers.erase(client.first);
             channel._voicedClients.insert(client);
         }
         else
         {
             channel._voicedClients.erase(client.first);
-            channel._joinedClients.insert(client);
+            channel._joinedUsers.insert(client);
         }
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << std::endl;
     }
+    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
 
-static std::pair<const int, Client>     &getClientFromNicknameHostAddress(Server *class_ptr, std::string nicknameHostAddress)
+static std::pair<const int, Client>     &getClientFromNicknameHostAddress(Server *class_ptr, std::string nicknameHostAddress, std::string channel_name, size_t pfdsindex)
 {
-    std::map<int, Client>::iterator it = class_ptr->ClientsMap.begin();
     std::string nickname = nicknameHostAddress.substr(0, nicknameHostAddress.find('!'));
     std::string address = nicknameHostAddress.substr(nicknameHostAddress.find('@') + 1);
 
-    while(it != class_ptr->ClientsMap.end())
-    {
-        if(it->second.getNICKNAME() == nickname && it->second.getIP() == address)
-            break;
-        it++;
-    }
-    if (it == class_ptr->ClientsMap.end())
-        throw std::runtime_error("client not found");
-    return (*it);
+    std::pair<const int, Client> &the_client = getClient(class_ptr, class_ptr->ClientsMap, nickname, channel_name, pfdsindex);;
+    return (the_client);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
@@ -171,23 +152,21 @@ static void     banClient(Server *class_ptr, bool add, t_parsedModeCommand &pars
     try
     {
         Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
-        std::pair<const int,Client>   &client = getClientFromNicknameHostAddress(class_ptr, parsedCommand.parameter);
+        std::pair<const int,Client>   &client = getClientFromNicknameHostAddress(class_ptr, parsedCommand.parameter, parsedCommand.channel_name, pfdsindex);
+        if (add == true)
         {
             channel._operators.erase(client.first);
             channel._voicedClients.erase(client.first);
-            channel._joinedClients.erase(client.first);
-            channel._bannedClients.insert(client);
+            channel._bannedUsers.insert(client);
         }
         else
-        {
-            channel._bannedClients.erase(client.first);
-            channel._joinedClients.insert(client);
-        }
+            channel._bannedUsers.erase(client.first);
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << std::endl;
     }
+    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
@@ -206,6 +185,7 @@ static void    setPrivate(Server *class_ptr, bool add, t_parsedModeCommand &pars
     {
         std::cerr << e.what() << std::endl;
     }
+    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, " ");
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
@@ -224,6 +204,7 @@ static void    setSecret(Server *class_ptr, bool add, t_parsedModeCommand &parse
     {
         std::cerr << e.what() << std::endl;
     }
+    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
@@ -242,6 +223,7 @@ static void    setInviteOnly(Server *class_ptr, bool add, t_parsedModeCommand &p
     {
         std::cerr << e.what() << std::endl;
     }
+    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
@@ -260,6 +242,7 @@ static void    setOnlyOpsChangeTopic(Server *class_ptr, bool add, t_parsedModeCo
     {
         std::cerr << e.what() << std::endl;
     }
+    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
@@ -278,6 +261,7 @@ static void    setNoOutsideMessages(Server *class_ptr, bool add, t_parsedModeCom
     {
         std::cerr << e.what() << std::endl;
     }
+    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
@@ -296,11 +280,12 @@ static void     setOnlyVoiceAndOps(Server *class_ptr, bool add, t_parsedModeComm
     {
         std::cerr << e.what() << std::endl;
     }
+    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-static void setClientLimit(Server *class_ptr, bool add, t_parsedModeCommand &parsedCommand, size_t pfdsindex)
+static void setClientLimit(Server *class_ptr, bool add, t_parsedModeCommand &parsedCommand, size_t pfdsindex, std::string command)
 {
     try
     {
@@ -310,15 +295,15 @@ static void setClientLimit(Server *class_ptr, bool add, t_parsedModeCommand &par
             channel._modes |= 0x40;
         else
             channel._modes &= ~0x40;
-        channel._clientLimit = std::stoi(parsedCommand.parameter);
+        channel._client_limit = std::stoi(parsedCommand.parameter);
     }
     catch(const std::exception& e)
     {
         if (dynamic_cast<const std::invalid_argument*>(&e) != nullptr || dynamic_cast<const std::out_of_range*>(&e) != nullptr)
-            ERR_NEEDMOREPARAMS(pfdsindex, command[0]);
-        else
-            std::cerr << e.what() << std::endl;
+            ERR_NEEDMOREPARAMS(class_ptr->pfds[pfdsindex].fd, command);
+        std::cerr << e.what() << std::endl;
     }
+    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
@@ -333,8 +318,8 @@ static void setKey(Server *class_ptr, bool add, t_parsedModeCommand &parsedComma
         {
             if (channel._key.empty() == false)
             {
-                ERR_KEYSET(pfdsindex, channel._channel_name)
-                throw std::exception("");
+                ERR_KEYSET(class_ptr->pfds[pfdsindex].fd, channel._channel_name)
+                throw std::runtime_error("Error: setKey");
             }
             channel._key = parsedCommand.parameter;
         }
@@ -345,51 +330,51 @@ static void setKey(Server *class_ptr, bool add, t_parsedModeCommand &parsedComma
     {
         std::cerr << e.what() << std::endl;
     }
+    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
 void    Server::executeModeCommand(size_t pfdsindex, std::vector<std::string> &full_cmd)
 {
-    t_parsedModeCommand parsedCommand;
-    bool                add;
-
     try
     {
+        t_parsedModeCommand parsedCommand;
+        bool                add;
+
         if (full_cmd.size() == 1)
         {
-            ERR_NEEDMOREPARAMS(pfdsindex, "MODE");
-            throw std::runtime_error("");
-        }
-        std::string command = full_cmd[1];    
-        parsedCommand = parseModeCommand(command, pfdsindex)
+            ERR_NEEDMOREPARAMS(this->pfds[pfdsindex].fd, full_cmd[0]);
+            throw std::runtime_error("Error: executeModeCommand");
+        }   
+        parsedCommand = parseModeCommand(this, full_cmd[1], pfdsindex);
         add = (parsedCommand.mode[0] == '+');
-        if (parsedCommand.mode[1] == 'o')            // FIXME: check if user is in channel, if not, send ERR_USERNOTINCHANNEL, and also check if user is operator, NEEDS A PARAMETER
-            setOperator(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 'v')       // FIXME: check if user is in channel, if not, send ERR_USERNOTINCHANNEL, and also check if user is already voiced, NEEDS A PARAMETER
-            setVoiced(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 'b')       // FIXME: check if user is in channel, if not, send ERR_USERNOTINCHANNEL, and also check if user is already banned, NEEDS A PARAMETER
+        if (parsedCommand.mode[1] == 'o')
+            setOperator(this, add, pfdsindex, parsedCommand);
+        else if (parsedCommand.mode[1] == 'v')
+            setVoiced(this, add, pfdsindex, parsedCommand);
+        else if (parsedCommand.mode[1] == 'b')
             banClient(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 'p')       // FIXME: DOESNT NEED A PARAMETER
+        else if (parsedCommand.mode[1] == 'p')
             setPrivate(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 's')       // FIXME: DOESNT NEED A PARAMETER
+        else if (parsedCommand.mode[1] == 's')
             setSecret(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 'i')       // FIXME: DOESNT NEED A PARAMETER
+        else if (parsedCommand.mode[1] == 'i')
             setInviteOnly(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 't')       // FIXME: DOESNT NEED A PARAMETER
+        else if (parsedCommand.mode[1] == 't')
             setOnlyOpsChangeTopic(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 'n')       // FIXME: DOESNT NEED A PARAMETER
+        else if (parsedCommand.mode[1] == 'n')
             setNoOutsideMessages(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 'm')       // FIXME: DOESNT NEED A PARAMETER
+        else if (parsedCommand.mode[1] == 'm')
             setOnlyVoiceAndOps(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 'l')       // FIXME: check if the parametre is a number, if not, send ERR_NEEDMOREPARAMS, NEEDS A PARAMETER
-            setClientLimit(this, add, parsedCommand, pfdsindex);
+        else if (parsedCommand.mode[1] == 'l')
+            setClientLimit(this, add, parsedCommand, pfdsindex, full_cmd[0]);
         else if (parsedCommand.mode[1] == 'k')
             setKey(this, add, parsedCommand, pfdsindex);
         else
         {
-            ERR_UMODEUNKNOWNFLAG(pfdsindex, (*it)[i])
-            throw std::exception();
+            ERR_UNKNOWNMODE(this->pfds[pfdsindex].fd, std::string(1, parsedCommand.mode[1]), parsedCommand.channel_name)
+            throw std::runtime_error("Error: unkownMode");
         }
     }
     catch(const std::exception& e)
@@ -400,3 +385,4 @@ void    Server::executeModeCommand(size_t pfdsindex, std::vector<std::string> &f
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
+

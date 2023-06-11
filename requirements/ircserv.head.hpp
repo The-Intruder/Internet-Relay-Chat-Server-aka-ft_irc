@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.head.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: Abellakr, Hssain, Mohamed Amine            +#+  +:+       +#+        */
+/*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/05/07 14:52:22 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/05 18:59:37 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,16 +106,17 @@ class Client
 
 class Channel {
     public:
-        std::map<int,Client>            _joinedClients; // Clients that joined specifec channel
+        std::map<int,Client>            _joinedUsers; // Clients that joined specifec channel
         std::map<int,Client>            _admins;        // Admins of a specifec channel
         std::map<int,Client>            _operators;     // Operators of a specifec channel
-        std::map<int,Client>            _bannedClients; // Banned Clients
+        std::map<int,Client>            _bannedUsers; // Banned Clients
         std::map<int,Client>            _voicedClients; // Voiced Clients under a moderated channel
         std::string                     _channel_name;
         std::string                     _channel_pass;
         std::string                     _topic;
         uint64_t                        _client_limit;
         uint32_t                        _modes;
+        std::string                     _key;
 
     public:
         Channel(std::string channelName, std::string channelPass);
@@ -139,16 +140,23 @@ class Channel {
         uint64_t    getClientLimit() const;
         std::string getChannelPass() const;
         std::string getChannelTopic() const;
-
+        bool        empty() const;
+        void        addAdmin(int fd);
         void        joinChannel(Client &client, std::string &chPass, int fd);
         void        notifyUsers(int fd);
         void        welcomeUser(int fd);
-
-        void    addAdmin(int fd);
-        void    addOperator(std::pair<int,Client> client);
-        void    addVoiced(std::pair<int,Client> client);
-        void    banClient(std::pair<int,Client> client);
-
+        void        PRIVMSG_messagToChannel(int fd, std::string &msg);
+        void        NOTICE_messagToChannel(int fd, std::string &msg);
+        void        leftChannel(int fd, std::string &msg);
+        void        sayGoodby(int fd, std::string &msg);
+        void        kickFromChan(int kickerFd, std::string &userToKick, std::string &comment);
+        bool        isClientOnChan(int fd);
+        void        sendTopicToClient(int fd);
+        void        changeTopic(int fd, std::string &topic);
+        void        removeUser(int fd);
+        void        addOperator(std::pair<int,Client> client);
+        void        addVoiced(std::pair<int,Client> client);
+        void        banClient(std::pair<int,Client> client);
 };
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
@@ -156,17 +164,18 @@ class Channel {
 class Server
 {
     public:
-        int                             PORT;           // argument port
-        int                             servsockfd;     // socket file descriptor of the server
-        std::string                     PASSWORD;       // password of the server
-        std::string                     Servtimeinfo;   // server created time
-        std::string                     buffertmp;      // this is for ignoring control D behavior 
-        struct sockaddr_in              ServAddr;       // socket address of the server
-        std::vector<pollfd>             pfds;           // file descriptors to keep eyes on 
-        std::vector<std::string>        MS;             // message splited by space
-        std::vector<std::string>        MSATH;          // mesaage splited by space for ATH phase
-        std::map<std::string,Channel>   ChannelsMap;    // Channels map
-        std::map<int,Client>            ClientsMap;     // clients map
+        int PORT; // argument port
+        std::string PASSWORD; // password of the server
+        int servsockfd; // socket file descriptor of the server0
+        struct sockaddr_in ServAddr; // socket address of the server
+        std::vector<pollfd> pfds; // file descriptors to keep eyes on 
+        std::map<int,Client>  ClientsMap; // clients map
+        std::vector<std::string> MS; // message splited by space
+        std::vector<std::string> MSATH; // mesaage splited by space for ATH phase
+        std::string Servtimeinfo; // server created time
+        std::string buffertmp; // this is for ignoring control D behavior 
+        /*---------------------- Hssain-Part ------------------ */
+        std::map<std::string,Channel>  ChannelsMap; // Channels map
  
     public:
         Server(int PORT, std::string PASSTWORD);
@@ -182,22 +191,59 @@ class Server
         void    checknick(size_t pfdsindex, Client& client);
         void    checkuser(size_t pfdsindex, Client& client);
         
-        void    writemessagetoclients(size_t pfdsindex, std::string message); // pfdsindex is the fd socket of the client to send data to *
-        void    splitargs();
-        void    getDateTime();
-        long    ft_gettime(void);
-        void    executecommand(size_t pfdsindex);
+        void writeMessageToClient(size_t pfdsindex, std::string message); // pfdsindex is the fd socket of the client to send data to *
+        void splitargs();
+        void getDateTime();
+        long ft_gettime(void);
+        void executecommand(size_t pfdsindex);
+        // commands
         void    bot(size_t pfdsindex);
-        void    HandleJOIN(size_t pfdsindex, std::string args);
-        void    addChannel(int fd, std::string chName, std::string chPass);
-        void    RemoveChannel();
+        void    nick(size_t pfdsindex);
+        void    quit(size_t pfdsindex);
+
+        /*---------------------- Hssain-Part ------------------ */
+        /*----------- Anything related to channels and messages ------------- */
+        void HandleJOIN(size_t pfdsindex, std::string args);
+        // JOIN
+        void HandleJOIN(size_t pfdsindex, std::vector<std::string> args);
+        void addChannel(int fd, std::string chName, std::string chPass);
+        // PRIVMSG
+        void PRIVMSG_Handle(size_t pfdsindex, std::vector<std::string> args);
+        void PRIVMSG_handdleMSG(std::size_t pfdsindex, std::vector<std::vector<std::string> > args);
+        void PRIVMSG_messagToClient(std::size_t pfdsindex, std::string &clientNick, std::string &msg);
+        // NOTICE
+        void NOTICE_Handle(size_t pfdsindex, std::vector<std::string> args);
+        void NOTICE_handdleMSG(std::size_t pfdsindex, std::vector<std::vector<std::string> > args);
+        void NOTICE_messagToClient(std::size_t pfdsindex, std::string &clientNick, std::string &msg);
+        // PART
+        void PART_Handle(size_t pfdsindex, std::vector<std::string> args);
+        void PART_trigger(std::size_t pfdsindex, std::vector<std::vector<std::string> > args);
+        // KICK
+        void KICK_Handle(size_t pfdsindex, std::vector<std::string> args);
+        void KICK_trigger(std::size_t pfdsindex, std::vector<std::string> args);
+        // TOPIC
+        void TOPIC_Handle(std::size_t pfdsindex, std::vector<std::string> args);
+        void TOPIC_trigger(std::size_t pfdsindex, std::vector<std::string> args);
+        // Misc
+        void removeClientFromChans(int fd);
+        void removeChannel(std::string chName);
 
         void    executeModeCommand(size_t pfdsindex, std::vector<std::string> &full_cmd);
-        void    executeInviteCommand(size_t pfdsindex, std::vector<std::string> &full_cmd)
+        void    executeInviteCommand(size_t pfdsindex, std::vector<std::string> &full_cmd);
+
 };
 
-/* -------------------------------- PROTOTYPES ------------------------------ */
+/* -------------------------------------------------------------------------- */
+// Misc functions
+void    writeMessageToClient(int fd, std::string message);
 
-void    writemessagetoclients(int fd, std::string message);
+
+
+/* -------------------------------------------------------------------------- */
+// PRIVMSG_NOTICE_utils
+void                                    stringTrim(std::string &str, const char *to_trim);
+std::string                             is_duplicate(std::vector<std::string> receivers);
+std::vector<std::vector<std::string> >  finalData(std::vector<std::string> buffer);
+std::vector<std::vector<std::string> >  parseArgs(std::string args);
 
 #endif // SERVER_HPP
