@@ -1,388 +1,320 @@
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
-/*      File: handle_MODE.cpp                                                                                                                           */
-/*      Brief: Mode source file                                                                                                                         */
-/*      Authors:                                                                                                                                        */
-/*       - Mohamed Amine Naimi                                                                                                                          */
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------*/
+/*      File: handle_MODE.cpp                                                 */
+/*      Brief: Mode source file                                               */
+/*      Authors:                                                              */
+/*       - Mohamed Amine Naimi                                                */
+/* -------------------------------------------------------------------------- */
 
 #include "../ircserv.head.hpp"
 
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
-static t_parsedModeCommand  parseModeCommand(Server *class_ptr, std::string const &command, size_t pfdsindex)
+Channel   *Server::get_channel(std::string chan_name)
 {
-    t_parsedModeCommand    parsedCommand;
-    std::string::size_type pos = 0;
+    std::map<std::string, Channel>::iterator it = ChannelsMap.find(chan_name);
 
-    pos = command.find(' ');
-    if (pos == std::string::npos)
-    {
-        ERR_NEEDMOREPARAMS(class_ptr->pfds[pfdsindex].fd, command);
-        throw std::runtime_error("Error: mode command");
-    }
-    parsedCommand.channel_name = command.substr(0, pos);
-    std::cout << parsedCommand.channel_name << std::endl;
-    while (pos < command.length() && command[pos] == ' ')
-        pos++;
-    if (pos == std::string::npos || pos >= command.length() || pos + 1 >= command.length())
-    {
-        ERR_NEEDMOREPARAMS(class_ptr->pfds[pfdsindex].fd, command);
-        throw std::runtime_error("Error: mode command");
-    }
-    if ((command[pos] == '+' || command[pos] == '-') && pos + 1 < command.length())
-    {
-        parsedCommand.mode = std::string(1, command[pos]);
-        if (!std::isalpha(command[pos + 1]))
-        {
-            ERR_UNKNOWNMODE(class_ptr->pfds[pfdsindex].fd, std::string(1, command[pos + 1]), parsedCommand.channel_name);
-            throw std::runtime_error("Error: mode command");
-        }
-        parsedCommand.mode += std::string(1, command[++pos]);
-    }
-    while (command[pos] == ' ' && pos < command.length())
-        pos++;
-    if (pos < command.length())
-    {
-        if (command[pos] == ':')
-            parsedCommand.parameter = command.substr(pos + 1);
-        else
-            parsedCommand.parameter = command.substr(pos);
-    }
-    return (parsedCommand);
+    if (it == ChannelsMap.end())
+        throw std::runtime_error("get_channel: channel not found");
+    return (&(it->second));
 }
 
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
-static std::pair<const int, Client>     &getClient(Server *class_ptr, std::map<int, Client> &ClientsMap, std::string nickname, std::string channel_name, size_t pfdsindex)
+std::pair<const int, Client>     &Server::get_client(std::string nickname, \
+    Channel* channel, size_t pfdsindex)
 {
-    std::map<int, Client>::iterator it = ClientsMap.begin();
+    std::map<int, Client>::iterator it = channel->_joinedUsers.begin();
 
-    while(it != ClientsMap.end())
+    while(it != channel->_joinedUsers.end())
     {
         if(it->second.getNICKNAME() == nickname)
             break;
         it++;
     }
-    if (it == ClientsMap.end())
+    if (it == channel->_joinedUsers.end())
     {
-        ERR_USERNOTINCHANNEL(class_ptr->pfds[pfdsindex].fd, nickname, channel_name);
-        throw std::runtime_error("Error: getClient");
+        ERR_USERNOTINCHANNEL(pfdsindex, nickname, channel->_channel_name);
+        throw std::runtime_error("ERR_USERNOTINCHANNEL: User not in channel");
     }
     return (*(it));
 }
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/* -------------------------------------------------------------------------- */
 
-static Channel   &getChannel(std::map<std::string, Channel> &Channels, std::string channelName)
+t_pmc  Server::parse_mode_command(std::string &command, size_t pfdsindex)
 {
-    std::map<std::string, Channel>::iterator it = Channels.find(channelName);
+    t_pmc                   parsed_command;
+    std::string             channel_name;
+    std::string::size_type  pos = 0;
+    std::string::size_type  pos2 = 0;
 
-    if (it == Channels.end())
-        throw std::runtime_error("getChannel: channel not found");
-    return (it->second);
+    std::string cmd = "MODE";
+    pos = command.find(" ");
+    if (pos == std::string::npos)
+    {
+        ERR_NEEDMOREPARAMS(pfdsindex, cmd);
+        throw std::runtime_error("ERR_NEEDMOREPARAMS: Needs more parametres");
+    }
+    channel_name = command.substr(0, pos++);
+    parsed_command.channel = get_channel(channel_name);
+    while (pos < command.length() && command[pos] == ' ')
+        ++pos;
+    if (pos >= command.length() || pos + 1 >= command.length() \
+        || (command[pos] != '+' && command[pos] != '-') \
+        || !std::isalpha(command[pos + 1]))
+    {
+        ERR_NEEDMOREPARAMS(pfdsindex, cmd);
+        throw std::runtime_error("ERR_NEEDMOREPARAMS: Needs more parametres");
+    }
+    parsed_command.mode = command.substr(pos, 2);
+    pos = command.find(" ", pos);
+    if (pos == std::string::npos)
+        return (parsed_command);
+    while (pos < command.length() && command[pos] == ' ')
+        ++pos;
+    pos2 = command.find(" ", pos);
+    if (command[pos] == ':')
+        parsed_command.parameter = command.substr(pos + 1, command.length() - (pos + 1));
+    else if (pos2 == std::string::npos)
+        parsed_command.parameter = command.substr(pos, command.length() - pos);
+    else
+        parsed_command.parameter = command.substr(pos + 1, pos2 - (pos + 1));
+    return (parsed_command);
 }
 
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
-static void    setOperator(Server *class_ptr, bool add, size_t pfdsindex, t_parsedModeCommand &parsedCommand)
+void    Server::set_operator(bool add, size_t pfdsindex, t_pmc &pmc)
 {
-    try
+    std::pair<const int,Client> &client = get_client(pmc.parameter, \
+        pmc.channel, pfdsindex);
+
+    if (add == true)
+        pmc.channel->_operators.insert(client);
+    else
+        pmc.channel->_operators.erase(client.first);
+
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, pmc.mode, \
+        pmc.parameter);
+}
+
+/* -------------------------------------------------------------------------- */
+
+void     Server::set_voiced(bool add, size_t pfdsindex, t_pmc &pmc)
+{
+    std::pair<const int,Client>   &client = get_client(pmc.parameter, \
+        pmc.channel, pfdsindex);
+
+    if (add == true)
+        pmc.channel->_voicedClients.insert(client);
+    else
+        pmc.channel->_voicedClients.erase(client.first);
+
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, pmc.mode, \
+        pmc.parameter);
+}
+
+
+/* -------------------------------------------------------------------------- */
+
+void     Server::ban_client(bool add, t_pmc &pmc, size_t pfdsindex)
+{
+    std::pair<const int,Client> &client = get_client(pmc.parameter, \
+        pmc.channel, pfdsindex);
+
+    if (add == true)
     {
-        std::pair<const int,Client>   &client = getClient(class_ptr, class_ptr->ClientsMap, parsedCommand.parameter, parsedCommand.channel_name, pfdsindex);
-        Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
-        if (add == true)
+        pmc.channel->_operators.erase(client.first);
+        pmc.channel->_voicedClients.erase(client.first);
+        pmc.channel->_bannedUsers.insert(client);
+    }
+    else
+        pmc.channel->_bannedUsers.erase(client.first);
+
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, pmc.mode, \
+        pmc.parameter);
+}
+
+/* -------------------------------------------------------------------------- */
+
+void    Server::set_private(bool add, t_pmc &pmc, size_t pfdsindex)
+{
+    if (add == true)
+        pmc.channel->_modes |= 0x01;
+    else
+        pmc.channel->_modes &= ~0x01;
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
+        pmc.mode, " ");
+}
+
+/* -------------------------------------------------------------------------- */
+
+void    Server::set_secret(bool add, t_pmc &pmc, size_t pfdsindex)
+{
+    if (add == true)
+        pmc.channel->_modes |= 0x02;
+    else
+        pmc.channel->_modes &= ~0x02;
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
+        pmc.mode, " ");
+}
+
+/* -------------------------------------------------------------------------- */
+
+void    Server::set_invite_only(bool add, t_pmc &pmc, size_t pfdsindex)
+{
+    if (add == true)
+        pmc.channel->_modes |= 0x04;
+    else
+        pmc.channel->_modes &= ~0x04;
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
+        pmc.mode, " ");
+}
+
+/* -------------------------------------------------------------------------- */
+
+void    Server::set_only_ops_change_topic(bool add, t_pmc &pmc, size_t pfdsindex)
+{
+    if (add == true)
+        pmc.channel->_modes |= 0x20;
+    else
+        pmc.channel->_modes &= ~0x20;
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
+        pmc.mode, " ");
+}
+
+/* -------------------------------------------------------------------------- */
+
+void    Server::set_no_outside_messages(bool add, t_pmc &pmc, size_t pfdsindex)
+{
+    if (add == true)
+        pmc.channel->_modes |= 0x10;
+    else
+        pmc.channel->_modes &= ~0x10;
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
+        pmc.mode, " ");
+}
+
+/* -------------------------------------------------------------------------- */
+
+void     Server::set_only_voice_and_ops(bool add, t_pmc &pmc, size_t pfdsindex)
+{
+    if (add == true)
+        pmc.channel->_modes |= 0x08;
+    else
+        pmc.channel->_modes &= ~0x08;
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
+        pmc.mode, " ");
+}
+
+/* -------------------------------------------------------------------------- */
+
+void   Server::set_client_limit(bool add, t_pmc &pmc, size_t pfdsindex, std::string cmd)
+{
+    if (add == true)
+        pmc.channel->_modes |= 0x40;
+    else
+        pmc.channel->_modes &= ~0x40;
+    if (!std::isdigit(pmc.parameter[0]))
+    {
+        ERR_NEEDMOREPARAMS(pfdsindex, cmd);
+        throw std::runtime_error("ERR_NEEDMOREPARAMS: Needs more parametres");
+    }
+    pmc.channel->_client_limit = std::atoi(pmc.parameter.c_str());
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, pmc.mode, \
+        pmc.parameter);
+}
+
+/* -------------------------------------------------------------------------- */
+
+void    Server::set_key(bool add, t_pmc &pmc, size_t pfdsindex)
+{
+    if (add == true)
+    {
+        if (pmc.channel->_key.empty() == false)
         {
-            channel._joinedUsers.erase(client.first);
-            channel._operators.insert(client);
+            ERR_KEYSET(pfdsindex, pmc.channel->_channel_name)
+            throw std::runtime_error("ERR_KEYSET: Key already set");
         }
-        else
-        {
-            channel._operators.erase(client.first);
-            channel._joinedUsers.insert(client);
-        }
+        pmc.channel->_key = pmc.parameter;
     }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
+    else if (pmc.parameter == pmc.channel->_key)
+        pmc.channel->_key.clear();
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
+        pmc.mode, pmc.parameter);
 }
 
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
-static void     setVoiced(Server *class_ptr, bool add, size_t pfdsindex, t_parsedModeCommand &parsedCommand)
+void    Server::is_operator(Channel& channel, size_t pfdsindex)
 {
+    std::map<int,Client>::iterator it = channel._joinedUsers.find(pfds[pfdsindex].fd);
+
+    if (it == channel._joinedUsers.end())
+    {
+        ERR_NOTONCHANNEL(pfdsindex, channel._channel_name)
+        throw std::runtime_error("ERR_NOTONCHANNEL: Not on the channel");
+    }
+    it = channel._operators.find(pfds[pfdsindex].fd);
+
+    if (it == channel._operators.end())
+    {
+        ERR_CHANOPRIVSNEEDED(pfdsindex, channel._channel_name);
+        throw std::runtime_error("ERR_CHANOPRIVSNEEDED: Not an operator");
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+void    Server::execute_mode_command(size_t pfdsindex, \
+    std::vector<std::string> &full_cmd)
+{
+    t_pmc   pmc;
+    bool    add;
+    std::string cmd = "MODE";
+
     try
     {
-        std::pair<const int,Client>   &client = getClient(class_ptr, class_ptr->ClientsMap, parsedCommand.parameter, parsedCommand.channel_name, pfdsindex);
-        Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
-        if (add == true)
-        {
-            channel._joinedUsers.erase(client.first);
-            channel._voicedClients.insert(client);
-        }
-        else
-        {
-            channel._voicedClients.erase(client.first);
-            channel._joinedUsers.insert(client);
-        }
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
-}
-
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
-
-static std::pair<const int, Client>     &getClientFromNicknameHostAddress(Server *class_ptr, std::string nicknameHostAddress, std::string channel_name, size_t pfdsindex)
-{
-    std::string nickname = nicknameHostAddress.substr(0, nicknameHostAddress.find('!'));
-    std::string address = nicknameHostAddress.substr(nicknameHostAddress.find('@') + 1);
-
-    std::pair<const int, Client> &the_client = getClient(class_ptr, class_ptr->ClientsMap, nickname, channel_name, pfdsindex);;
-    return (the_client);
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
-static void     banClient(Server *class_ptr, bool add, t_parsedModeCommand &parsedCommand, size_t pfdsindex)
-{
-    try
-    {
-        Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
-        std::pair<const int,Client>   &client = getClientFromNicknameHostAddress(class_ptr, parsedCommand.parameter, parsedCommand.channel_name, pfdsindex);
-        if (add == true)
-        {
-            channel._operators.erase(client.first);
-            channel._voicedClients.erase(client.first);
-            channel._bannedUsers.insert(client);
-        }
-        else
-            channel._bannedUsers.erase(client.first);
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
-}
-
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
-
-static void    setPrivate(Server *class_ptr, bool add, t_parsedModeCommand &parsedCommand, size_t pfdsindex)
-{
-    try
-    {
-        Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
-        if (add == true)
-            channel._modes |= 0x01;
-        else
-            channel._modes &= ~0x01;
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, " ");
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
-static void    setSecret(Server *class_ptr, bool add, t_parsedModeCommand &parsedCommand, size_t pfdsindex)
-{
-    try
-    {
-        Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
-        if (add == true)
-            channel._modes |= 0x02;
-        else
-            channel._modes &= ~0x02;
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
-static void    setInviteOnly(Server *class_ptr, bool add, t_parsedModeCommand &parsedCommand, size_t pfdsindex)
-{
-    try
-    {
-        Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
-        if (add == true)
-            channel._modes |= 0x04;
-        else
-            channel._modes &= ~0x04;
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
-static void    setOnlyOpsChangeTopic(Server *class_ptr, bool add, t_parsedModeCommand &parsedCommand, size_t pfdsindex)
-{
-    try
-    {
-        Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
-        if (add == true)
-            channel._modes |= 0x20;
-        else
-            channel._modes &= ~0x20;
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
-static void    setNoOutsideMessages(Server *class_ptr, bool add, t_parsedModeCommand &parsedCommand, size_t pfdsindex)
-{
-    try
-    {
-        Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
-        if (add == true)
-            channel._modes |= 0x10;
-        else
-            channel._modes &= ~0x10;
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
-static void     setOnlyVoiceAndOps(Server *class_ptr, bool add, t_parsedModeCommand &parsedCommand, size_t pfdsindex)
-{
-    try
-    {
-        Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
-        if (add == true)
-            channel._modes |= 0x08;
-        else
-            channel._modes &= ~0x08;
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
-static void setClientLimit(Server *class_ptr, bool add, t_parsedModeCommand &parsedCommand, size_t pfdsindex, std::string command)
-{
-    try
-    {
-        Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
-
-        if (add == true)
-            channel._modes |= 0x40;
-        else
-            channel._modes &= ~0x40;
-        channel._client_limit = std::stoi(parsedCommand.parameter);
-    }
-    catch(const std::exception& e)
-    {
-        if (dynamic_cast<const std::invalid_argument*>(&e) != nullptr || dynamic_cast<const std::out_of_range*>(&e) != nullptr)
-            ERR_NEEDMOREPARAMS(class_ptr->pfds[pfdsindex].fd, command);
-        std::cerr << e.what() << std::endl;
-    }
-    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
-static void setKey(Server *class_ptr, bool add, t_parsedModeCommand &parsedCommand, size_t pfdsindex)
-{
-    try
-    {
-        Channel     &channel = getChannel(class_ptr->ChannelsMap, parsedCommand.channel_name);
-
-        if (add == true)
-        {
-            if (channel._key.empty() == false)
-            {
-                ERR_KEYSET(class_ptr->pfds[pfdsindex].fd, channel._channel_name)
-                throw std::runtime_error("Error: setKey");
-            }
-            channel._key = parsedCommand.parameter;
-        }
-        else
-            channel._key = parsedCommand.parameter;
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-    RPL_CHANNELMODEIS(class_ptr->pfds[pfdsindex].fd, parsedCommand.channel_name, parsedCommand.mode, parsedCommand.parameter);
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
-void    Server::executeModeCommand(size_t pfdsindex, std::vector<std::string> &full_cmd)
-{
-    try
-    {
-        t_parsedModeCommand parsedCommand;
-        bool                add;
-
         if (full_cmd.size() == 1)
         {
-            ERR_NEEDMOREPARAMS(this->pfds[pfdsindex].fd, full_cmd[0]);
-            throw std::runtime_error("Error: executeModeCommand");
-        }   
-        parsedCommand = parseModeCommand(this, full_cmd[1], pfdsindex);
-        add = (parsedCommand.mode[0] == '+');
-        if (parsedCommand.mode[1] == 'o')
-            setOperator(this, add, pfdsindex, parsedCommand);
-        else if (parsedCommand.mode[1] == 'v')
-            setVoiced(this, add, pfdsindex, parsedCommand);
-        else if (parsedCommand.mode[1] == 'b')
-            banClient(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 'p')
-            setPrivate(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 's')
-            setSecret(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 'i')
-            setInviteOnly(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 't')
-            setOnlyOpsChangeTopic(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 'n')
-            setNoOutsideMessages(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 'm')
-            setOnlyVoiceAndOps(this, add, parsedCommand, pfdsindex);
-        else if (parsedCommand.mode[1] == 'l')
-            setClientLimit(this, add, parsedCommand, pfdsindex, full_cmd[0]);
-        else if (parsedCommand.mode[1] == 'k')
-            setKey(this, add, parsedCommand, pfdsindex);
+            ERR_NEEDMOREPARAMS(pfdsindex, cmd);
+            throw std::runtime_error("ERR_NEEDMOREPARAMS: Needs more params");
+        }
+        pmc = parse_mode_command(full_cmd[1], pfdsindex);
+        is_operator(*(pmc.channel), pfdsindex);
+        add = (pmc.mode[0] == '+');
+        if (pmc.mode[1] == 'o')
+            set_operator(add, pfdsindex, pmc);
+        else if (pmc.mode[1] == 'v')
+            set_voiced(add, pfdsindex, pmc);
+        else if (pmc.mode[1] == 'b')
+            ban_client(add, pmc, pfdsindex);
+        else if (pmc.mode[1] == 'p')
+            set_private(add, pmc, pfdsindex);
+        else if (pmc.mode[1] == 's')
+            set_secret(add, pmc, pfdsindex);
+        else if (pmc.mode[1] == 'i')
+            set_invite_only(add, pmc, pfdsindex);
+        else if (pmc.mode[1] == 't')
+            set_only_ops_change_topic(add, pmc, pfdsindex);
+        else if (pmc.mode[1] == 'n')
+            set_no_outside_messages(add, pmc, pfdsindex);
+        else if (pmc.mode[1] == 'm')
+            set_only_voice_and_ops(add, pmc, pfdsindex);
+        else if (pmc.mode[1] == 'l')
+            set_client_limit(add, pmc, pfdsindex, full_cmd[0]);
+        else if (pmc.mode[1] == 'k')
+            set_key(add, pmc, pfdsindex);
         else
         {
-            ERR_UNKNOWNMODE(this->pfds[pfdsindex].fd, std::string(1, parsedCommand.mode[1]), parsedCommand.channel_name)
-            throw std::runtime_error("Error: unkownMode");
+            ERR_UNKNOWNMODE(pfdsindex, pmc.mode, pmc.channel->_channel_name)
+            throw std::runtime_error("ERR_UNKNOWNMODE: Unknown mode");
         }
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
+        // std::cerr << e.what() << std::endl;
     }
     
 }
-
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
 

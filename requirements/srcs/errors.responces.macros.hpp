@@ -12,7 +12,6 @@
 
 #ifndef ERRORS_RESPONCES_MACROS_HPP
 #define ERRORS_RESPONCES_MACROS_HPP
-#include <string>
 
 #define ERR_NEEDMOREPARAMS(pfdsindex, cmd) {std::string message = ":IrcTheThreeMusketeers 461 " + cmd + " :Not enough parameters\n"; writeMessageToClient(pfdsindex, message);}
 #define ERR_ALREADYREGISTRED(pfdsindex) {std::string message = ":IrcTheThreeMusketeers 462 :You may not reregister\n";  writeMessageToClient(pfdsindex, message);}
@@ -110,6 +109,8 @@
 # define RPL_UNIQOPIS(pfdsindex, chName, nick) {std::string message = ":IrcTheThreeMusketeers 325 " + chName + " " + nick + "\n"; writeMessageToClient(pfdsindex, message);}
 */
 
+# define ERR_USERONCHANNEL(pfdsindex, nickname, chName) {std::string message = ":IrcTheThreeMusketeers 443 " + nickname + " " + chName + ":is already on channel\n"; writeMessageToClient(pfdsindex, message);}
+# define RPL_INVITING(pfdsindex, nickname, chName) {std::string message = ":IrcTheThreeMusketeers 341 " + chName + " " + nickname + "\n"; writeMessageToClient(pfdsindex, message);}
 
 #endif
 

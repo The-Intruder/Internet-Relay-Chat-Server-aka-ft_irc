@@ -301,7 +301,7 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "NICK" || MS[0] == "nick") // nick 
         nick(pfdsindex);
     else if(MS[0] == "MODE" || MS[0] == "mode") // mode
-        executeModeCommand(pfdsindex, MS);
+        execute_mode_command(pfdsindex, MS);
     else if(MS[0] == "QUIT" || MS[0] == "quit") // quit
         quit(pfdsindex);
     else if(MS[0] == "JOIN" || MS[0] == "join") // join
@@ -311,7 +311,7 @@ void Server::executecommand(size_t pfdsindex)
     else if(MS[0] == "TOPIC" || MS[0] == "topic") // topic 
         this->TOPIC_Handle(pfdsindex, MS);
     else if(MS[0] == "INVITE" || MS[0] == "invite") // invite
-        executeInviteCommand(pfdsindex, MS);
+        execute_invite_command(pfdsindex, MS);
     else if(MS[0] == "KICK" || MS[0] == "kick") // kick
         this->KICK_Handle(pfdsindex, MS);
     else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg") // privmsg

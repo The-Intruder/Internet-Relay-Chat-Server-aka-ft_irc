@@ -1,59 +1,16 @@
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
-/*  File: handle_INVITE.cpp                                                                                                                             */
-/*  Brief: Invite source file                                                                                                                           */
-/*  Authors:                                                                                                                                            */
-/*   - Mohamed Amine Naimi                                                                                                                              */
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+/*  File: handle_INVITE.cpp                                                   */
+/*  Brief: Invite source file                                                 */
+/*  Authors:                                                                  */
+/*   - Mohamed Amine Naimi                                                    */
+/* -------------------------------------------------------------------------- */
 
 #include "../ircserv.head.hpp"
 
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
-static t_parsedInviteCommand  parseInviteCommand(std::string const &command, size_t pfdsindex)
-{
-    t_parsedInviteCommand    parsedCommand;
-    std::string::size_type pos = 0;
-    std::string::size_type pos2 = 0;
-
-    pos = command.find(' ');
-    if (pos == std::string::npos)
-    {
-        ERR_NEEDMOREPARAMS(pfdsindex, command);
-        throw std::runtime_error("");
-    }
-    parsedCommand.nickname = command.substr(0, pos);
-    while ( pos < command.length() && command[pos] == ' ')
-        pos++;
-    if (pos >= command.length())
-    {
-        ERR_NEEDMOREPARAMS(pfdsindex, command);
-        throw std::runtime_error("");
-    }
-    pos = command.find(' ', pos);
-    if (pos + 1 >= command.length())
-    {
-        ERR_NEEDMOREPARAMS(pfdsindex, command);
-        throw std::runtime_error("");
-    }
-    if (command[pos + 1] == '#' && pos + 2 < command.length())
-    {
-        pos2 = command.find(' ', pos);
-        if (pos2 == std::string::npos)
-            parsedCommand.channel_name = command.substr(pos + 1);
-        else
-            parsedCommand.channel_name = command.substr(pos + 1, pos2 - pos);
-    }
-    else
-    {
-        ERR_NEEDMOREPARAMS(pfdsindex, command);
-        throw std::runtime_error("");
-    }
-    return (parsedCommand);
-}
-
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
-
-static std::pair<const int, Client>     &getClient(std::map<int, Client> &ClientsMap, std::string nickname, size_t pfdsindex, std::string channel_name)
+int     Server::get_client_fd(std::string nickname, \
+    size_t pfdsindex)
 {
     std::map<int, Client>::iterator it = ClientsMap.begin();
 
@@ -65,59 +22,108 @@ static std::pair<const int, Client>     &getClient(std::map<int, Client> &Client
     }
     if (it == ClientsMap.end())
     {
-        ERR_USERNOTINCHANNEL(pfdsindex, nickname, channel_name);
-        throw std::runtime_error("");
+        ERR_NOSUCHNICK(pfdsindex, nickname);
+        throw std::runtime_error("ERR_NOSUCHNICK: No such nickname");
     }
-    return (*(it));
+    return (it->first);
 }
 
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
-static Channel   &getChannel(std::map<std::string, Channel> &Channels, std::string channelName)
+t_pic  Server::parse_invite_command(std::string &command, size_t pfdsindex)
 {
-    std::map<std::string, Channel>::iterator it = Channels.find(channelName);
+    std::string::size_type  pos2 = 0;
+    std::string::size_type  pos = 0;
+    t_pic           parsed_command;
+    std::string     nickname;
+    std::string     channel_name;
 
-    if (it == Channels.end())
-        throw std::runtime_error("channel not found");
-    return (it->second);
+    std::string cmd = "INVITE";
+    pos = command.find(" ");
+    if (pos == std::string::npos)
+    {
+        ERR_NEEDMOREPARAMS(pfdsindex, cmd);
+        throw std::runtime_error("ERR_NEEDMOREPARAMS: Needs more parametres");
+    }
+    nickname = command.substr(0, pos++);
+    parsed_command.clients_fd = get_client_fd(nickname, pfdsindex);
+    while (pos < command.length() && command[pos] == ' ')
+        ++pos;
+    if (pos >= command.length())
+    {
+        ERR_NEEDMOREPARAMS(pfdsindex, cmd);
+        throw std::runtime_error("ERR_NEEDMOREPARAMS: Needs more parametres");
+    }
+    pos2 = command.find(" ", pos);
+    if (command[pos] == ':')
+        channel_name = command.substr(pos + 1, command.length() - (pos + 1));
+    else if (pos2 == std::string::npos)
+        channel_name = command.substr(pos, command.length() - pos);
+    else
+        channel_name = command.substr(pos + 1, pos2 - (pos + 1));
+    parsed_command.channel = get_channel(channel_name);
+    return (parsed_command);
 }
 
+/* -------------------------------------------------------------------------- */
 
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------- */
-
-void    Server::executeInviteCommand(size_t pfdsindex, std::vector<std::string> &full_cmd)
+void    Server::is_invite_operator(Channel& channel, size_t pfdsindex)
 {
-    t_parsedInviteCommand parsedCommand;
+    std::map<int,Client>::iterator it = channel._joinedUsers.find(pfds[pfdsindex].fd);
+
+    if (it == channel._joinedUsers.end())
+    {
+        ERR_NOTONCHANNEL(pfdsindex, channel._channel_name)
+        throw std::runtime_error("ERR_NOTONCHANNEL: Not on the channel");
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+static size_t get_client_count(Channel &channel)
+{
+    std::map<int,Client>::iterator it = channel._joinedUsers.begin();
+    size_t count = 0;
+    while (it != channel._joinedUsers.end())
+    {
+        it++;
+        count++;
+    }
+    return (count);
+}
+
+/* -------------------------------------------------------------------------- */
+
+void    Server::execute_invite_command(size_t pfdsindex, \
+    std::vector<std::string> &full_cmd)
+{
+    t_pic pic;
 
     try
     {
         if (full_cmd.size() == 1)
         {
             ERR_NEEDMOREPARAMS(pfdsindex, full_cmd[0]);
-            throw std::runtime_error("");
-        }
-        std::string command = full_cmd[1];    
-        parsedCommand = parseInviteCommand(command, pfdsindex);
-        if (parsedCommand.nickname == "" || parsedCommand.channel_name == "")
+            throw std::runtime_error("ERR_NEEDMOREPARAMS");
+        }  
+        pic = parse_invite_command(full_cmd[1], pfdsindex);
+        is_invite_operator(*pic.channel, pfdsindex);
+        if (get_client_count(*pic.channel) + 1 >= pic.channel->_client_limit)
         {
-            ERR_NEEDMOREPARAMS(pfdsindex, full_cmd[0]);
-            throw std::runtime_error("");
+            ERR_CHANNELISFULL(pfdsindex, pic.channel->_channel_name);
+            throw std::runtime_error(" ");
         }
-        Channel& channel = getChannel(ChannelsMap, parsedCommand.channel_name);
-        std::map<int, Client>::iterator it1 = channel._joinedUsers.find(pfdsindex);
-        std::map<int, Client>::iterator it2 = channel._bannedUsers.find(pfdsindex);
-
-        if (it1 == channel._joinedUsers.end() || it2 != channel._bannedUsers.end())
+        std::map<int,Client>::iterator it = pic.channel->_joinedUsers.find(pic.clients_fd);
+        if (it != pic.channel->_joinedUsers.end())
         {
-            ERR_CANNOTSENDTOCHAN(pfdsindex, channel._channel_name);
-            throw std::runtime_error("");
+            ERR_USERONCHANNEL(pfdsindex, it->second.getNICKNAME(), pic.channel->_channel_name)
+            throw std::runtime_error(" ");
         }
-        std::pair<const int, Client> invited_client = getClient(ClientsMap, parsedCommand.nickname, pfdsindex, parsedCommand.channel_name);
-        channel._joinedUsers.insert(invited_client);
-
+        it = ClientsMap.find(pic.clients_fd);
+        pic.channel->_joinedUsers.insert(std::make_pair(it->first, it->second));
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << std::endl;
+        // std::cerr << e.what() << std::endl;
     }
 }

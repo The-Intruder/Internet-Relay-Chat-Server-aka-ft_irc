@@ -39,19 +39,20 @@
 // #define ERR_ALREADYREGISTRED 462
 
 /* -------------------------------- STRUCTS --------------------------------- */
+class Channel;
 
-typedef struct s_parsedModeCommand
+typedef struct s_pmc
 {
-    std::string    channel_name;
-    std::string    mode;
-    std::string    parameter;
-}   t_parsedModeCommand;
+    Channel*        channel;
+    std::string     mode;
+    std::string     parameter;
+}   t_pmc;
 
-typedef struct s_parsedInviteCommand
+typedef struct s_pic
 {
-    std::string    nickname;
-    std::string    channel_name;
-}   t_parsedInviteCommand;
+    int         clients_fd;
+    Channel*    channel;
+}   t_pic;
 
 /* -------------------------------- CLASSES --------------------------------- */
 
@@ -228,9 +229,27 @@ class Server
         void removeClientFromChans(int fd);
         void removeChannel(std::string chName);
 
-        void    executeModeCommand(size_t pfdsindex, std::vector<std::string> &full_cmd);
-        void    executeInviteCommand(size_t pfdsindex, std::vector<std::string> &full_cmd);
-
+        /* ---- AMINE'S PART ------------------------------------------------ */
+        Channel*                        get_channel(std::string channel_name);
+        std::pair<const int, Client>    &get_client(std::string nickname, Channel* channel, size_t pfdsindex);
+        struct s_pmc    parse_mode_command(std::string &command, size_t pfdsindex);
+        void    set_operator(bool add, size_t pfdsindex, t_pmc &pmc);
+        void    set_voiced(bool add, size_t pfdsindex, t_pmc &pmc);
+        void    ban_client(bool add, t_pmc &pmc, size_t pfdsindex);
+        void    set_private(bool add, t_pmc &pmc, size_t pfdsindex);
+        void    set_secret(bool add, t_pmc &pmc, size_t pfdsindex);
+        void    set_invite_only(bool add, t_pmc &pmc, size_t pfdsindex);
+        void    set_only_ops_change_topic(bool add, t_pmc &pmc, size_t pfdsindex);
+        void    set_no_outside_messages(bool add, t_pmc &pmc, size_t pfdsindex);
+        void    set_only_voice_and_ops(bool add, t_pmc &pmc, size_t pfdsindex);
+        void    set_client_limit(bool add, t_pmc &pmc, size_t pfdsindex, std::string cmd);
+        void    set_key(bool add, t_pmc &pmc, size_t pfdsindex);
+        void    execute_mode_command(size_t pfdsindex, std::vector<std::string> &full_cmd);
+        void    execute_invite_command(size_t pfdsindex, std::vector<std::string> &full_cmd);
+        void    is_operator(Channel& channel, size_t pfdindex);
+        void    is_invite_operator(Channel& channel, size_t pfdindex);
+        int     get_client_fd(std::string nickname, size_t pfdsindex);
+        t_pic   parse_invite_command(std::string &command, size_t pfdsindex);
 };
 
 /* -------------------------------------------------------------------------- */
