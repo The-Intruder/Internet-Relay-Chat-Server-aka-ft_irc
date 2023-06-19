@@ -22,6 +22,7 @@ Channel::Channel(std::string channelName, std::string channelPass){
     this->_client_limit = 50;
     this->_modes = 0;
     this->_topic = "";
+    this->_HostName= "";
 }
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
@@ -34,6 +35,7 @@ Channel::Channel(Channel const &src){
     _topic = src._topic;
     _client_limit = src._client_limit;
     _modes = src._modes;
+    _HostName = src._HostName;
 } 
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
@@ -47,6 +49,7 @@ const Channel &Channel::operator=(Channel const &src){
         _topic = src._topic;
         _client_limit = src._client_limit;
         _modes = src._modes;
+        _HostName = src._HostName;
     }
     return *this;
 }
@@ -134,7 +137,7 @@ std::string Channel::getChannelTopic() const{
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
-void    Channel::setHostName(std::string &hostName){
+void    Channel::setHostName(std::string hostName){
     this->_HostName = hostName;
 }
 
@@ -148,10 +151,9 @@ bool    Channel::empty() const{
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
 void Channel::notifyUsers(int fd){
-
     std::string notifyusers = ":" + this->_joinedUsers.find(fd)->second.getNICKNAME() \
     + "!" + this->_joinedUsers.find(fd)->second.getUSERNAME() + "@" +  this->_HostName + " JOIN " \
-    + this->getChannelName() + "\n";
+    + this->getChannelName() + "\r\n";
     for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
         writeMessageToClient_fd(i->first, notifyusers);
     }
@@ -186,7 +188,10 @@ void    Channel::joinChannel(Client &client, std::string &chPass, int fd){
         ERR_CHANNELISFULL(fd, this->getChannelName());
     } else if (this->_joinedUsers.find(fd) == this->_joinedUsers.end()){
         this->_joinedUsers.insert(std::make_pair(fd, client));
-
+        if (this->_joinedUsers.size() == 1)
+            this->addAdmin(fd);
+        this->notifyUsers(fd);
+        this->welcomeUser(fd);
     }
 }
 
@@ -202,7 +207,7 @@ void    Channel::PRIVMSG_messagToChannel(int fd, std::string &msg){
         if (!this->isOnlyVoiceAndOps() || (this->isOnlyVoiceAndOps() && this->_admins.find(fd) != this->_admins.end())){
             std::string fullMsg = ":" + client->second.getNICKNAME() \
             + "!" + client->second.getUSERNAME() + "@" +  this->_HostName + " PRIVMSG " \
-            + this->getChannelName() + " :" + msg + "\n";
+            + this->getChannelName() + " :" + msg + "\r\n";
 
             for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
                 if (i->first != fd)
@@ -221,7 +226,7 @@ void    Channel::NOTICE_messagToChannel(int fd, std::string &msg){
         if (!this->isOnlyVoiceAndOps() || (this->isOnlyVoiceAndOps() && this->_admins.find(fd) != this->_admins.end())){
             std::string fullMsg = ":" + client->second.getNICKNAME() \
             + "!" + client->second.getUSERNAME() + "@" +  this->_HostName + " PRIVMSG " \
-            + this->getChannelName() + " :" + msg + "\n";
+            + this->getChannelName() + " :" + msg + "\r\n";
 
             for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
                 if (i->first != fd)
@@ -236,7 +241,7 @@ void    Channel::NOTICE_messagToChannel(int fd, std::string &msg){
 void Channel::sayGoodby(int fd, std::string &msg){
     std::string sayBy = ":" + this->_joinedUsers.find(fd)->second.getNICKNAME() \
     + "!" + this->_joinedUsers.find(fd)->second.getUSERNAME() + "@" +  this->_HostName + " PART " \
-    + this->getChannelName() + " " + msg + "\n";
+    + this->getChannelName() + " " + msg + "\r\n";
     for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
         writeMessageToClient_fd(i->first, sayBy);
     }
@@ -276,7 +281,7 @@ void    Channel::kickFromChan(int kickerFd, std::string &userToKick, std::string
     if (this->_admins.find(kickerFd) != this->_admins.end()){
         std::string cmnt = ":" + this->_joinedUsers.find(kickerFd)->second.getNICKNAME() \
         + "!" + this->_joinedUsers.find(kickerFd)->second.getUSERNAME() + "@" +  this->_HostName + " KICK " \
-        + this->getChannelName() + " " + userToKick + " " + comment + "\n";
+        + this->getChannelName() + " " + userToKick + " " + comment + "\r\n";
         for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
             writeMessageToClient_fd(i->first, cmnt);
         }

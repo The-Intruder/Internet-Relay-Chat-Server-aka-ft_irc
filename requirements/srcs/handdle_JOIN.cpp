@@ -75,10 +75,8 @@ parse_JOIN(std::string args){
 
 void    Server::addChannel(int fd, std::string chName, std::string chPass){
     Channel channel(chName, chPass);
+    channel.setHostName(this->Hostname);
     channel.joinChannel(this->ClientsMap.find(fd)->second, chPass, fd);
-    channel.addAdmin(fd);
-    channel.notifyUsers(fd);
-    channel.welcomeUser(fd);
     this->ChannelsMap.insert(std::make_pair(chName, channel));
 }
 
@@ -93,17 +91,17 @@ void Server::HandleJOIN(size_t pfdsindex, std::vector<std::string> args){
     } else {
         std::pair<std::vector<std::string>, std::vector<std::string> > parsedArgs = \
         parse_JOIN(args[1]);
+        std::map<std::string, Channel>::iterator channel;
+        std::string chPass;
         for (std::size_t i=0;i<parsedArgs.first.size();i++){
-            std::string chPass = i < parsedArgs.second.size() ? parsedArgs.second[i] : "";
-            std::map<std::string, Channel>::iterator channel = this->ChannelsMap.find(parsedArgs.first[i]);
+            chPass = i < parsedArgs.second.size() ? parsedArgs.second[i] : "";
+            channel = this->ChannelsMap.find(parsedArgs.first[i]);
             if (checkChannelName(parsedArgs.first[i])){
                 ERR_INVALIDCHNLNAME(pfdsindex, parsedArgs.first[i]);
             } else if (channel == this->ChannelsMap.end()){
                 this->addChannel(this->pfds[pfdsindex].fd, parsedArgs.first[i], chPass);
             } else if (channel != this->ChannelsMap.end()) {
                 channel->second.joinChannel(this->ClientsMap.find(this->pfds[pfdsindex].fd)->second, chPass, this->pfds[pfdsindex].fd);
-                channel->second.notifyUsers(this->pfds[pfdsindex].fd);
-                channel->second.welcomeUser(this->pfds[pfdsindex].fd);
             }
         }
     }
