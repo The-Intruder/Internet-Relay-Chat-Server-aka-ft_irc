@@ -173,7 +173,7 @@ void Channel::welcomeUser(int fd){
 void    Channel::joinChannel(Client &client, std::string &chPass, int fd){
     if (this->getChannelPass() != chPass){
         ERR_BADCHANNELKEY(fd, this->getChannelName());
-    } else if (this->isInviteOnly() || this->isInviteOnly()){
+    } else if (this->isInviteOnly() || this->isPrivate()){
         ERR_INVITEONLYCHAN(fd, this->getChannelName());
     }else if (this->_joinedUsers.size() >= this->getClientLimit()){
         ERR_CHANNELISFULL(fd, this->getChannelName());
