@@ -6,25 +6,27 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/09 13:19:28 by abellakr          #+#    #+#             */
-/*   Updated: 2023/06/19 21:55:56 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/19 23:18:17 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef ERRORS_RESPONCES_MACROS_HPP
 #define ERRORS_RESPONCES_MACROS_HPP
 
-#define ERR_NEEDMOREPARAMS(pfdsindex, cmd) {std::string message = ":IrcTheThreeMusketeers 461 " + cmd + " :Not enough parameters\n"; writeMessageToClient(pfdsindex, message);}
-#define ERR_ALREADYREGISTRED(pfdsindex) {std::string message = ":IrcTheThreeMusketeers 462 :You may not reregister\n";  writeMessageToClient(pfdsindex, message);}
-#define ERR_NONICKNAMEGIVEN(pfdsindex) {std::string message = ":IrcTheThreeMusketeers 431 ::No nickname given\n"; writeMessageToClient(pfdsindex, message);}
-#define ERR_ERRONEUSNICKNAME(pfdsindex, nickname){std::string message = ":IrcTheThreeMusketeers 432 " + nickname + " :Erroneus nickname\n";writeMessageToClient(pfdsindex, message);}
-#define ERR_NICKNAMEINUSE(pfdsindex, nickname) {std::string message = ":IrcTheThreeMusketeers 433 " + nickname + " :Nickname is already in use\n"; writeMessageToClient(pfdsindex, message);}
-#define RPL_WELCOME(pfdsindex, nickname, username, Hostname){std::string message = ":IrcTheThreeMusketeers 001 " + nickname + " !" + username + " @" + Hostname + " Welcome to the Internet Relay Network\n"; writeMessageToClient(pfdsindex, message);}
-#define RPL_YOURHOST(pfdsindex){std::string message = ":IrcTheThreeMusketeers 002 Your host is IrcTheThreeMusketeers, running version 1.0\n"; writeMessageToClient(pfdsindex, message);}
-#define RPL_CREATED(pfdsindex, timeinfo){std::string message = ":IrcTheThreeMusketeers 003 This server was created " + timeinfo + "\n";writeMessageToClient(pfdsindex, message);}
-#define ERR_CMDNOTFOUND(pfdsindex){std::string message = ":IrcTheThreeMusketeers ERROR :command not found\n";writeMessageToClient(pfdsindex, message);}
-#define ERR_FLAGNOTFOUND(pfdsindex){std::string message = ":IrcTheThreeMusketeers ERROR :flag not found use -help\n";writeMessageToClient(pfdsindex, message);}
-#define ERR_BADARGUMENT(pfdsindex){std::string message = ":IrcTheThreeMusketeers ERROR :bad argument\n";writeMessageToClient(pfdsindex, message);}
-
+#define ERR_NEEDMOREPARAMS(pfdsindex, cmd) {std::string message = ":IrcTheThreeMusketeers 461 " + cmd + " :Not enough parameters\r\n"; writeMessageToClient(pfdsindex, message);}
+#define ERR_ALREADYREGISTRED(pfdsindex) {std::string message = ":IrcTheThreeMusketeers 462 :You may not reregister\r\n";  writeMessageToClient(pfdsindex, message);}
+#define ERR_NONICKNAMEGIVEN(pfdsindex) {std::string message = ":IrcTheThreeMusketeers 431 ::No nickname given\r\n"; writeMessageToClient(pfdsindex, message);}
+#define ERR_ERRONEUSNICKNAME(pfdsindex, nickname){std::string message = ":IrcTheThreeMusketeers 432 " + nickname + " :Erroneus nickname\r\n";writeMessageToClient(pfdsindex, message);}
+#define ERR_NICKNAMEINUSE(pfdsindex, nickname) {std::string message = ":IrcTheThreeMusketeers 433 " + nickname + " :Nickname is already in use\r\n"; writeMessageToClient(pfdsindex, message);}
+#define RPL_WELCOME(pfdsindex, nickname, username, Hostname){std::string message = ":IrcTheThreeMusketeers 001 " + nickname + " !" + username + " @" + Hostname + " Welcome to the Internet Relay Network\r\n"; writeMessageToClient(pfdsindex, message);}
+#define RPL_YOURHOST(pfdsindex){std::string message = ":IrcTheThreeMusketeers 002 Your host is IrcTheThreeMusketeers, running version 1.0\r\n"; writeMessageToClient(pfdsindex, message);}
+#define RPL_CREATED(pfdsindex, timeinfo){std::string message = ":IrcTheThreeMusketeers 003 This server was created " + timeinfo + "\r\n";writeMessageToClient(pfdsindex, message);}
+#define ERR_BADARGUMENT(pfdsindex){std::string message = ":IrcTheThreeMusketeers ERROR :bad argument\r\n";writeMessageToClient(pfdsindex, message);}
+#define  RPL_MYINFO(pfdsindex){std::string message = ":IrcTheThreeMusket 004 1.0 - - \r\n"; writeMessageToClient(pfdsindex, message);}
+#define RPL_MOTD(pfdsindex){std::string message = ":IrcTheThreeMusket 372 - - \r\n";writeMessageToClient(pfdsindex, message);}
+#define RPL_ENDOFMOTD(pfdsindex){std::string message = ":IrcTheThree 376 this server is created by Mohammed Amine Naimi, Abdellah Bellakrim ,Hssain Aitkadir.\r\n"; writeMessageToClient(pfdsindex, message);}
+#define ERR_CMDNOTFOUND(pfdsindex){std::string message = ":IrcTheThreeMusketeers ERROR :command not found\r\n";writeMessageToClient(pfdsindex, message);}
+#define ERR_FLAGNOTFOUND(pfdsindex){std::string message = ":IrcTheThreeMusketeers ERROR :flag not found use -help\r\n";writeMessageToClient(pfdsindex, message);}
 // JOIN ERRS and RPL
 
 /*
@@ -117,3 +119,4 @@
 
 
 
+/// 0004, 372 , 376

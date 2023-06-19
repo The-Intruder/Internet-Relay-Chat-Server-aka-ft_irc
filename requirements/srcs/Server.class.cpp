@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/06/19 21:25:27 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/19 23:14:21 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,6 +170,9 @@ bool Server::Authentication(size_t pfdsindex)
             RPL_WELCOME(pfdsindex, tmp.getNICKNAME(), tmp.getUSERNAME(), this->Hostname);
             RPL_YOURHOST(pfdsindex);
             RPL_CREATED(pfdsindex, Servtimeinfo);
+            RPL_MYINFO(pfdsindex);
+            RPL_MOTD(pfdsindex);
+            RPL_ENDOFMOTD(pfdsindex);
             tmp.settime(ft_gettime());
         }
         tmp.setAuthenticated(true);
