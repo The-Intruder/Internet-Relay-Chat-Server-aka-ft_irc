@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/06/09 12:17:03 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/19 21:16:21 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,9 @@ void    Server::SetupServer()
     tmpfd.fd = servsockfd;
     tmpfd.events = POLLIN;
     pfds.push_back(tmpfd);
-    std::cout << "Server started waiting for connections port : " << this->PORT << " | PASS : " << PASSWORD << std::endl;  
+    // function to get ip adress of the adress
+    getServerHostname();
+    std::cout << "Server started waiting for connections port : " << this->PORT << " | PASS : " << PASSWORD << " | HOSTNAME : " << Hostname << std::endl;  
     std::cout << "To athenticate to the server set in order:\n1.password: \"pass + <password>\"\n2.nickname: \"nick + <nickname>\"\n3.username: \"user + <username> <hostname> <servername> <realname>\"" << std::endl;
     std::cout << "<-----------------------> waiting ... <------------------------->" << std::endl;
 }
@@ -333,3 +335,12 @@ long	Server::ft_gettime(void)
 	return (current_time.tv_sec);
 }
 
+void Server::getServerHostname()
+{
+    char hostname[256];
+   if (gethostname(hostname, sizeof(hostname)) == 0) {
+        Hostname = hostname;
+   } else {
+    std::cout << "error getting hostname" << std::endl;
+   }
+}

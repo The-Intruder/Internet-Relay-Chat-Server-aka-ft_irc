@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/29 10:55:17 by abellakr          #+#    #+#             */
-/*   Updated: 2023/06/05 18:59:37 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/19 21:14:46 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@
 # include <arpa/inet.h>
 # include <netinet/in.h>
 # include "srcs/errors.responces.macros.hpp"
+#include <arpa/inet.h>
 
 // error replies macros
 // #define ERR_NEEDMOREPARAMS 461
@@ -177,6 +178,7 @@ class Server
         std::string buffertmp; // this is for ignoring control D behavior 
         /*---------------------- Hssain-Part ------------------ */
         std::map<std::string,Channel>  ChannelsMap; // Channels map
+        std::string Hostname; // hostname of the server
  
     public:
         Server(int PORT, std::string PASSTWORD);
@@ -201,6 +203,7 @@ class Server
         void    bot(size_t pfdsindex);
         void    nick(size_t pfdsindex);
         void    quit(size_t pfdsindex);
+        void        getServerHostname();
 
         /*---------------------- Hssain-Part ------------------ */
         /*----------- Anything related to channels and messages ------------- */
