@@ -6,7 +6,7 @@
 /*   By: abellakr <abellakr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/05 18:31:53 by abellakr          #+#    #+#             */
-/*   Updated: 2023/06/19 21:16:21 by abellakr         ###   ########.fr       */
+/*   Updated: 2023/06/19 21:25:27 by abellakr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,7 +167,7 @@ bool Server::Authentication(size_t pfdsindex)
         if(tmp.getAuthenticated() == false)
         {
             std::cout << "client connected sockfd: " << pfds[pfdsindex].fd << std::endl; 
-            RPL_WELCOME(pfdsindex, tmp.getNICKNAME(), tmp.getUSERNAME());
+            RPL_WELCOME(pfdsindex, tmp.getNICKNAME(), tmp.getUSERNAME(), this->Hostname);
             RPL_YOURHOST(pfdsindex);
             RPL_CREATED(pfdsindex, Servtimeinfo);
             tmp.settime(ft_gettime());
