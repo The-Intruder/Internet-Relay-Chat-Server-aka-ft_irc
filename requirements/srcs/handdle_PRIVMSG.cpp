@@ -27,7 +27,7 @@ void    Server::PRIVMSG_messagToClient(std::size_t pfdsindex, std::string &clien
             break;
     }
     if (it != this->ClientsMap.end()){
-        writeMessageToClient(it->first, fullMsg);
+        writeMessageToClient_fd(it->first, fullMsg);
     } else {
         ERR_NOSUCHNICK(pfdsindex, clientNick);
     }

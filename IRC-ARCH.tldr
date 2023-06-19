@@ -1384,9 +1384,9 @@
     {
       "id": "pointer:pointer",
       "typeName": "pointer",
-      "x": 1200.65625,
-      "y": 561.1484375,
-      "lastActivityTimestamp": 1686253547303
+      "x": 99.375,
+      "y": 11.0009765625,
+      "lastActivityTimestamp": 1687044188839
     },
     {
       "followingUserId": null,
@@ -1881,14 +1881,14 @@
       "screenBounds": {
         "x": 0,
         "y": 0,
-        "w": 2228,
-        "h": 1043
+        "w": 2365.833251953125,
+        "h": 753.3333129882812
       },
       "zoomBrush": null,
       "isGridMode": false,
       "isPenMode": false,
       "id": "instance:instance",
-      "currentPageId": "page:Z6fXHgvPSJjSAVxA09gDQ",
+      "currentPageId": "page:PKougujaHRuATuYhiq0PD",
       "typeName": "instance"
     },
     {
@@ -1979,7 +1979,7 @@
     },
     {
       "x": 0,
-      "y": 0,
+      "y": 52.2412109375,
       "z": 1,
       "id": "camera:page:UnrQ6gUCMQEqsAl_IxwHA",
       "typeName": "camera"
@@ -2028,6 +2028,31 @@
       "focusLayerId": null,
       "id": "instance_page_state:page:PKougujaHRuATuYhiq0PD",
       "pageId": "page:PKougujaHRuATuYhiq0PD",
+      "typeName": "instance_page_state"
+    },
+    {
+      "id": "page:Z6fXHgvPSJjSAVxA09gDQ",
+      "name": "remove user from channels",
+      "index": "a8",
+      "typeName": "page"
+    },
+    {
+      "x": 264.0650634765625,
+      "y": 232.83202171325684,
+      "z": 1,
+      "id": "camera:page:Z6fXHgvPSJjSAVxA09gDQ",
+      "typeName": "camera"
+    },
+    {
+      "editingId": null,
+      "croppingId": null,
+      "selectedIds": [],
+      "hoveredId": null,
+      "erasingIds": [],
+      "hintingIds": [],
+      "focusLayerId": null,
+      "id": "instance_page_state:page:Z6fXHgvPSJjSAVxA09gDQ",
+      "pageId": "page:Z6fXHgvPSJjSAVxA09gDQ",
       "typeName": "instance_page_state"
     },
     {
@@ -20100,36 +20125,10 @@
       "typeName": "shape"
     },
     {
-      "id": "page:Z6fXHgvPSJjSAVxA09gDQ",
-      "name": "remove user from channels",
-      "index": "a8",
-      "typeName": "page"
-    },
-    {
-      "x": 0,
-      "y": 0,
-      "z": 1,
-      "id": "camera:page:Z6fXHgvPSJjSAVxA09gDQ",
-      "typeName": "camera"
-    },
-    {
-      "editingId": null,
-      "croppingId": null,
-      "selectedIds": [],
-      "hoveredId": null,
-      "erasingIds": [],
-      "hintingIds": [],
-      "focusLayerId": null,
-      "id": "instance_page_state:page:Z6fXHgvPSJjSAVxA09gDQ",
-      "pageId": "page:Z6fXHgvPSJjSAVxA09gDQ",
-      "typeName": "instance_page_state"
-    },
-    {
       "x": 876.92578125,
       "y": 127.63671875,
       "rotation": 0,
       "isLocked": false,
-      "id": "shape:pxsI_MjtQcqKg2h49sytd",
       "type": "text",
       "props": {
         "opacity": "1",
@@ -20144,6 +20143,7 @@
       },
       "parentId": "page:Z6fXHgvPSJjSAVxA09gDQ",
       "index": "a1",
+      "id": "shape:pxsI_MjtQcqKg2h49sytd",
       "typeName": "shape"
     },
     {

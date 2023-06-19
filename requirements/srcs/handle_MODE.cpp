@@ -248,16 +248,17 @@ void    Server::set_key(bool add, t_pmc &pmc, size_t pfdsindex)
 
 void    Server::is_operator(Channel& channel, size_t pfdsindex)
 {
-    std::map<int,Client>::iterator it = channel._joinedUsers.find(pfds[pfdsindex].fd);
+    std::map<int,Client>::iterator it1 = channel._joinedUsers.find(pfds[pfdsindex].fd);
 
-    if (it == channel._joinedUsers.end())
+    if (it1 == channel._joinedUsers.end())
     {
         ERR_NOTONCHANNEL(pfdsindex, channel._channel_name)
         throw std::runtime_error("ERR_NOTONCHANNEL: Not on the channel");
     }
-    it = channel._operators.find(pfds[pfdsindex].fd);
+    std::map<int,Client>::iterator it2 = channel._operators.find(pfds[pfdsindex].fd);
+    std::map<int,Client>::iterator it3 = channel._admins.find(pfds[pfdsindex].fd);
 
-    if (it == channel._operators.end())
+    if (it2 == channel._operators.end() && it3 == channel._admins.end())
     {
         ERR_CHANOPRIVSNEEDED(pfdsindex, channel._channel_name);
         throw std::runtime_error("ERR_CHANOPRIVSNEEDED: Not an operator");

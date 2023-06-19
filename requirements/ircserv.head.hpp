@@ -254,7 +254,7 @@ class Server
 
 /* -------------------------------------------------------------------------- */
 // Misc functions
-void    writeMessageToClient(int fd, std::string message);
+void    writeMessageToClient_fd(int fd, std::string message);
 
 
 

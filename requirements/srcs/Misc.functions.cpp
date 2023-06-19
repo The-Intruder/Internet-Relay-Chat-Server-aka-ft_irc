@@ -20,7 +20,7 @@ void    stringTrim(std::string &str, const char *to_trim){
 }
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
-void    writeMessageToClient(int fd, std::string message)
+void    writeMessageToClient_fd(int fd, std::string message)
 {
     int valwrite = write(fd, message.c_str() ,message.length());
     if(valwrite < 0)

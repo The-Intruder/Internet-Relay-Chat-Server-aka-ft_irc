@@ -146,7 +146,7 @@ void Channel::notifyUsers(int fd){
     + "!" + this->_joinedUsers.find(fd)->second.getUSERNAME() + "@localhost.ip JOIN " \
     + this->getChannelName() + "\n";
     for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
-        writeMessageToClient(i->first, notifyusers);
+        writeMessageToClient_fd(i->first, notifyusers);
     }
 }
 
@@ -173,7 +173,7 @@ void Channel::welcomeUser(int fd){
 void    Channel::joinChannel(Client &client, std::string &chPass, int fd){
     if (this->getChannelPass() != chPass){
         ERR_BADCHANNELKEY(fd, this->getChannelName());
-    } else if (this->isInviteOnly()){
+    } else if (this->isInviteOnly() || this->isInviteOnly()){
         ERR_INVITEONLYCHAN(fd, this->getChannelName());
     }else if (this->_joinedUsers.size() >= this->getClientLimit()){
         ERR_CHANNELISFULL(fd, this->getChannelName());
@@ -200,7 +200,7 @@ void    Channel::PRIVMSG_messagToChannel(int fd, std::string &msg){
 
             for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
                 if (i->first != fd)
-                    writeMessageToClient(i->first, fullMsg);
+                    writeMessageToClient_fd(i->first, fullMsg);
             }
         } else
             ERR_CANNOTSENDTOCHAN(fd, this->getChannelName());
@@ -219,7 +219,7 @@ void    Channel::NOTICE_messagToChannel(int fd, std::string &msg){
 
             for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
                 if (i->first != fd)
-                    writeMessageToClient(i->first, fullMsg);
+                    writeMessageToClient_fd(i->first, fullMsg);
             }
         }
     }
@@ -232,7 +232,7 @@ void Channel::sayGoodby(int fd, std::string &msg){
     + "!" + this->_joinedUsers.find(fd)->second.getUSERNAME() + "@localhost.ip PART " \
     + this->getChannelName() + " " + msg + "\n";
     for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
-        writeMessageToClient(i->first, sayBy);
+        writeMessageToClient_fd(i->first, sayBy);
     }
 }
 
@@ -272,7 +272,7 @@ void    Channel::kickFromChan(int kickerFd, std::string &userToKick, std::string
         + "!" + this->_joinedUsers.find(kickerFd)->second.getUSERNAME() + "@localhost.ip KICK " \
         + this->getChannelName() + " " + userToKick + " " + comment + "\n";
         for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
-            writeMessageToClient(i->first, cmnt);
+            writeMessageToClient_fd(i->first, cmnt);
         }
         this->_joinedUsers.erase(userToKickFd);
     } else
