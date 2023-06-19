@@ -17,7 +17,7 @@
 void    Server::NOTICE_messagToClient(std::size_t pfdsindex, std::string &clientNick, std::string &msg){
     Client &sender =  this->ClientsMap.find(this->pfds[pfdsindex].fd)->second;
     std::string fullMsg = ":" + sender.getNICKNAME() \
-    + "!" + sender.getUSERNAME() + "@localhost.ip NOTICE " \
+    + "!" + sender.getUSERNAME() + "@" + this->Hostname + " NOTICE " \
     + clientNick + " :" + msg + "\n";
 
     std::map<int, Client>::iterator it = this->ClientsMap.begin();

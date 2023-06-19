@@ -119,6 +119,7 @@ class Channel {
         uint64_t                        _client_limit;
         uint32_t                        _modes;
         std::string                     _key;
+        std::string                     _HostName;
 
     public:
         Channel(std::string channelName, std::string channelPass);
@@ -142,6 +143,7 @@ class Channel {
         uint64_t    getClientLimit() const;
         std::string getChannelPass() const;
         std::string getChannelTopic() const;
+        void        setHostName(std::string &hostName);
         bool        empty() const;
         void        addAdmin(int fd);
         void        joinChannel(Client &client, std::string &chPass, int fd);
