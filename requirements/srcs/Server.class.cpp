@@ -299,56 +299,25 @@ void Server::executecommand(size_t pfdsindex)
     if(MS[0] == "BOT" || MS[0] == "bot")                // bot
         bot(pfdsindex);
     else if(MS[0] == "NICK" || MS[0] == "nick") // nick 
-    {
-        std::cout << "111" << std::endl;
         nick(pfdsindex);
-    }
     else if(MS[0] == "MODE" || MS[0] == "mode") // mode
-    {
-        std::cout << "MODE: " << MS[1] << std::endl;
-        std::cout << "222" << std::endl;
         execute_mode_command(pfdsindex, MS);
-    }
     else if(MS[0] == "QUIT" || MS[0] == "quit") // quit
-    {
-        std::cout << "333" << std::endl;
         quit(pfdsindex);
-    }
     else if(MS[0] == "JOIN" || MS[0] == "join") // join
-    {
-        std::cout << "444" << std::endl;
         this->HandleJOIN(pfdsindex, MS);
-    }
     else if(MS[0] == "PART" || MS[0] == "part") // part
-    {
-        std::cout << "555" << std::endl;
         this->PART_Handle(pfdsindex, MS);
-    }
     else if(MS[0] == "TOPIC" || MS[0] == "topic") // topic 
-    {
-        std::cout << "666" << std::endl;
         this->TOPIC_Handle(pfdsindex, MS);
-    }
     else if(MS[0] == "INVITE" || MS[0] == "invite") // invite
-    {
-        std::cout << "777" << std::endl;
         execute_invite_command(pfdsindex, MS);
-    }
     else if(MS[0] == "KICK" || MS[0] == "kick") // kick
-    {
-        std::cout << "888" << std::endl;
         this->KICK_Handle(pfdsindex, MS);
-    }
     else if(MS[0] == "PRIVMSG" || MS[0] == "privmsg") // privmsg
-    {
-        std::cout << "999" << std::endl;
         this->PRIVMSG_Handle(pfdsindex, MS);
-    }
     else if(MS[0] == "NOTICE" || MS[0] == "notice") // notice
-    {
-        std::cout << "101010" << std::endl;
         this->NOTICE_Handle(pfdsindex, MS);
-    }
     else // command not found
     {
         if(MS[0] != "PING" && MS[0] != "PONG") // ignore PING AND PONG requests from limechat

@@ -41,7 +41,8 @@ std::pair<const int, Client>     &Server::get_client(std::string nickname, \
 
 /* -------------------------------------------------------------------------- */
 
-t_pmc  Server::parse_mode_command(std::string &command, size_t pfdsindex)
+t_pmc  Server::parse_mode_command(std::string &command, size_t pfdsindex, \
+    std::string username)
 {
     t_pmc                   parsed_command;
     std::string             channel_name;
@@ -51,11 +52,9 @@ t_pmc  Server::parse_mode_command(std::string &command, size_t pfdsindex)
     std::string cmd = "MODE";
     pos = command.find(" ");
     if (pos == std::string::npos)
-    {
-        ERR_NEEDMOREPARAMS(pfdsindex, cmd);
-        throw std::runtime_error("ERR_NEEDMOREPARAMS: Needs more parametres");
-    }
-    channel_name = command.substr(0, pos++);
+        channel_name = command.substr(0);
+    else
+        channel_name = command.substr(0, pos++);
     parsed_command.channel = get_channel(channel_name);
     while (pos < command.length() && command[pos] == ' ')
         ++pos;
@@ -63,7 +62,7 @@ t_pmc  Server::parse_mode_command(std::string &command, size_t pfdsindex)
         || (command[pos] != '+' && command[pos] != '-') \
         || !std::isalpha(command[pos + 1]))
     {
-        ERR_NEEDMOREPARAMS(pfdsindex, cmd);
+        RPL_CHANNELMODEIS(pfdsindex, channel_name, username, "+-ovbpsitnmlk");
         throw std::runtime_error("ERR_NEEDMOREPARAMS: Needs more parametres");
     }
     parsed_command.mode = command.substr(pos, 2);
@@ -84,7 +83,7 @@ t_pmc  Server::parse_mode_command(std::string &command, size_t pfdsindex)
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_operator(bool add, size_t pfdsindex, t_pmc &pmc)
+void    Server::set_operator(bool add, size_t pfdsindex, t_pmc &pmc, std::string username)
 {
     std::pair<const int,Client> &client = get_client(pmc.parameter, \
         pmc.channel, pfdsindex);
@@ -94,13 +93,13 @@ void    Server::set_operator(bool add, size_t pfdsindex, t_pmc &pmc)
     else
         pmc.channel->_operators.erase(client.first);
 
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, pmc.mode, \
-        pmc.parameter);
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+        pmc.mode + " " + pmc.parameter);
 }
 
 /* -------------------------------------------------------------------------- */
 
-void     Server::set_voiced(bool add, size_t pfdsindex, t_pmc &pmc)
+void     Server::set_voiced(bool add, size_t pfdsindex, t_pmc &pmc, std::string username)
 {
     std::pair<const int,Client>   &client = get_client(pmc.parameter, \
         pmc.channel, pfdsindex);
@@ -110,14 +109,14 @@ void     Server::set_voiced(bool add, size_t pfdsindex, t_pmc &pmc)
     else
         pmc.channel->_voicedClients.erase(client.first);
 
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, pmc.mode, \
-        pmc.parameter);
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+        pmc.mode + " " + pmc.parameter);
 }
 
 
 /* -------------------------------------------------------------------------- */
 
-void     Server::ban_client(bool add, t_pmc &pmc, size_t pfdsindex)
+void     Server::ban_client(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
 {
     std::pair<const int,Client> &client = get_client(pmc.parameter, \
         pmc.channel, pfdsindex);
@@ -131,85 +130,85 @@ void     Server::ban_client(bool add, t_pmc &pmc, size_t pfdsindex)
     else
         pmc.channel->_bannedUsers.erase(client.first);
 
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, pmc.mode, \
-        pmc.parameter);
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+        pmc.mode + " " + pmc.parameter);
 }
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_private(bool add, t_pmc &pmc, size_t pfdsindex)
+void    Server::set_private(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x01;
     else
         pmc.channel->_modes &= ~0x01;
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
-        pmc.mode, " ");
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+        pmc.mode);
 }
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_secret(bool add, t_pmc &pmc, size_t pfdsindex)
+void    Server::set_secret(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x02;
     else
         pmc.channel->_modes &= ~0x02;
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
-        pmc.mode, " ");
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+        pmc.mode);
 }
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_invite_only(bool add, t_pmc &pmc, size_t pfdsindex)
+void    Server::set_invite_only(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x04;
     else
         pmc.channel->_modes &= ~0x04;
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
-        pmc.mode, " ");
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+        pmc.mode);
 }
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_only_ops_change_topic(bool add, t_pmc &pmc, size_t pfdsindex)
+void    Server::set_only_ops_change_topic(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x20;
     else
         pmc.channel->_modes &= ~0x20;
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
-        pmc.mode, " ");
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+        pmc.mode);
 }
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_no_outside_messages(bool add, t_pmc &pmc, size_t pfdsindex)
+void    Server::set_no_outside_messages(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x10;
     else
         pmc.channel->_modes &= ~0x10;
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
-        pmc.mode, " ");
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+        pmc.mode);
 }
 
 /* -------------------------------------------------------------------------- */
 
-void     Server::set_only_voice_and_ops(bool add, t_pmc &pmc, size_t pfdsindex)
+void     Server::set_only_voice_and_ops(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x08;
     else
         pmc.channel->_modes &= ~0x08;
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
-        pmc.mode, " ");
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+        pmc.mode);
 }
 
 /* -------------------------------------------------------------------------- */
 
-void   Server::set_client_limit(bool add, t_pmc &pmc, size_t pfdsindex, std::string cmd)
+void   Server::set_client_limit(bool add, t_pmc &pmc, size_t pfdsindex, std::string cmd, std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x40;
@@ -221,13 +220,13 @@ void   Server::set_client_limit(bool add, t_pmc &pmc, size_t pfdsindex, std::str
         throw std::runtime_error("ERR_NEEDMOREPARAMS: Needs more parametres");
     }
     pmc.channel->_client_limit = std::atoi(pmc.parameter.c_str());
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, pmc.mode, \
-        pmc.parameter);
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+        pmc.mode + " " + pmc.parameter);
 }
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_key(bool add, t_pmc &pmc, size_t pfdsindex)
+void    Server::set_key(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
 {
     if (add == true)
     {
@@ -240,8 +239,8 @@ void    Server::set_key(bool add, t_pmc &pmc, size_t pfdsindex)
     }
     else if (pmc.parameter == pmc.channel->_key)
         pmc.channel->_key.clear();
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, \
-        pmc.mode, pmc.parameter);
+    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+        pmc.mode + " " + pmc.parameter);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -279,33 +278,35 @@ void    Server::execute_mode_command(size_t pfdsindex, \
         if (full_cmd.size() == 1)
         {
             ERR_NEEDMOREPARAMS(pfdsindex, cmd);
-            throw std::runtime_error("ERR_NEEDMOREPARAMS: Needs more params");
+            throw std::runtime_error("ERR_NEEDMOREPARAMS: Needs more parametres");
         }
-        pmc = parse_mode_command(full_cmd[1], pfdsindex);
+        std::map<int, Client>::iterator it = ClientsMap.find(pfds[pfdsindex].fd);
+        std::string username = it->second.getUSERNAME();
+        pmc = parse_mode_command(full_cmd[1], pfdsindex, username);
         is_operator(*(pmc.channel), pfdsindex);
         add = (pmc.mode[0] == '+');
         if (pmc.mode[1] == 'o')
-            set_operator(add, pfdsindex, pmc);
+            set_operator(add, pfdsindex, pmc, username);
         else if (pmc.mode[1] == 'v')
-            set_voiced(add, pfdsindex, pmc);
+            set_voiced(add, pfdsindex, pmc, username);
         else if (pmc.mode[1] == 'b')
-            ban_client(add, pmc, pfdsindex);
+            ban_client(add, pmc, pfdsindex, username);
         else if (pmc.mode[1] == 'p')
-            set_private(add, pmc, pfdsindex);
+            set_private(add, pmc, pfdsindex, username);
         else if (pmc.mode[1] == 's')
-            set_secret(add, pmc, pfdsindex);
+            set_secret(add, pmc, pfdsindex, username);
         else if (pmc.mode[1] == 'i')
-            set_invite_only(add, pmc, pfdsindex);
+            set_invite_only(add, pmc, pfdsindex, username);
         else if (pmc.mode[1] == 't')
-            set_only_ops_change_topic(add, pmc, pfdsindex);
+            set_only_ops_change_topic(add, pmc, pfdsindex, username);
         else if (pmc.mode[1] == 'n')
-            set_no_outside_messages(add, pmc, pfdsindex);
+            set_no_outside_messages(add, pmc, pfdsindex, username);
         else if (pmc.mode[1] == 'm')
-            set_only_voice_and_ops(add, pmc, pfdsindex);
+            set_only_voice_and_ops(add, pmc, pfdsindex, username);
         else if (pmc.mode[1] == 'l')
-            set_client_limit(add, pmc, pfdsindex, full_cmd[0]);
+            set_client_limit(add, pmc, pfdsindex, full_cmd[0], username);
         else if (pmc.mode[1] == 'k')
-            set_key(add, pmc, pfdsindex);
+            set_key(add, pmc, pfdsindex, username);
         else
         {
             ERR_UNKNOWNMODE(pfdsindex, pmc.mode, pmc.channel->_channel_name)
