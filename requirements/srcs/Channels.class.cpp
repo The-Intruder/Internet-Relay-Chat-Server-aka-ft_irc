@@ -179,8 +179,7 @@ void    Channel::joinChannel(Client &client, std::string &chPass, int fd){
         ERR_CHANNELISFULL(fd, this->getChannelName());
     } else if (this->_joinedUsers.find(fd) == this->_joinedUsers.end()){
         this->_joinedUsers.insert(std::make_pair(fd, client));
-        this->notifyUsers(fd);
-        this->welcomeUser(fd);
+
     }
 }
 

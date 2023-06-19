@@ -77,6 +77,8 @@ void    Server::addChannel(int fd, std::string chName, std::string chPass){
     Channel channel(chName, chPass);
     channel.joinChannel(this->ClientsMap.find(fd)->second, chPass, fd);
     channel.addAdmin(fd);
+    channel.notifyUsers(fd);
+    channel.welcomeUser(fd);
     this->ChannelsMap.insert(std::make_pair(chName, channel));
 }
 
@@ -100,6 +102,8 @@ void Server::HandleJOIN(size_t pfdsindex, std::vector<std::string> args){
                 this->addChannel(this->pfds[pfdsindex].fd, parsedArgs.first[i], chPass);
             } else if (channel != this->ChannelsMap.end()) {
                 channel->second.joinChannel(this->ClientsMap.find(this->pfds[pfdsindex].fd)->second, chPass, this->pfds[pfdsindex].fd);
+                channel->second.notifyUsers(this->pfds[pfdsindex].fd);
+                channel->second.welcomeUser(this->pfds[pfdsindex].fd);
             }
         }
     }
