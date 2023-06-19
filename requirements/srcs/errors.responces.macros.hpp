@@ -40,6 +40,7 @@
 #define ERR_INVALIDCHNLNAME(pfdsindex, chName){std::string message = ":IrcTheThreeMusketeers ERROR :invalid channel name: " + chName + "\r\n";writeMessageToClient(pfdsindex, message);}
 #define ERR_INVITEONLYCHAN(fd, chName){std::string message = ":IrcTheThreeMusketeers 473 " + chName + " :Cannot join channel (+i)\r\n";writeMessageToClient_fd(fd, message);}
 #define ERR_BADCHANNELKEY(fd, chName){std::string message = ":IrcTheThreeMusketeers 475 " + chName + " :Cannot join channel (+k)\r\n";writeMessageToClient_fd(fd, message);}
+#define ERR_BANNEDFROMCHAN(fd, chName){std::string message = ":IrcTheThreeMusketeers 474 " + chName + " :Cannot join channel (+b)\r\n";writeMessageToClient_fd(fd, message);}
 #define ERR_CHANNELISFULL(fd, chName){std::string message = ":IrcTheThreeMusketeers 471 " + chName + " :Cannot join channel (+l)\r\n";writeMessageToClient_fd(fd, message);}
 #define RPL_NAMREPLY(fd, nickName,  chName, members){std::string message = ":IrcTheThreeMusketeers 353 " + nickName + " = " + chName + " :" + members + "\r\n"; writeMessageToClient_fd(fd, message);}
 #define RPL_ENDOFNAMES(fd, nickName,  chName){std::string message = ":IrcTheThreeMusketeers 366 " + nickName + " " + chName + " :End of /NAMES list\r\n"; writeMessageToClient_fd(fd, message);}
@@ -81,7 +82,7 @@
 */
 
 
-#define ERR_CHANOPRIVSNEEDED(fd, chName){std::string message = ":IrcTheThreeMusketeers 482 " + chName + " You're not channel operator\r\n";writeMessageToClient_fd(fd, message);}
+#define ERR_CHANOPRIVSNEEDED(fd, chName){std::string message = ":IrcTheThreeMusketeers 482 " + chName + " :You're not channel operator\r\n";writeMessageToClient_fd(fd, message);}
 
 
 /*

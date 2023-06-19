@@ -184,6 +184,8 @@ void    Channel::joinChannel(Client &client, std::string &chPass, int fd){
         ERR_BADCHANNELKEY(fd, this->getChannelName());
     } else if (this->isInviteOnly() || this->isPrivate()){
         ERR_INVITEONLYCHAN(fd, this->getChannelName());
+    } else if (this->_admins.find(fd) != this->_admins.end()){
+        ERR_BANNEDFROMCHAN(fd, this->getChannelName());
     }else if (this->_joinedUsers.size() >= this->getClientLimit()){
         ERR_CHANNELISFULL(fd, this->getChannelName());
     } else if (this->_joinedUsers.find(fd) == this->_joinedUsers.end()){
@@ -268,8 +270,10 @@ void    Channel::kickFromChan(int kickerFd, std::string &userToKick, std::string
     int userToKickFd = 0;
     std::map<int, Client>::iterator clientIt = this->_joinedUsers.begin();
     while (clientIt != this->_joinedUsers.end()){
-        if (!clientIt->second.getNICKNAME().compare(userToKick))
+        if (!clientIt->second.getNICKNAME().compare(userToKick)){
             userToKickFd = clientIt->first;
+            break;
+        }
         clientIt++;
     }
     if (!userToKickFd){
@@ -285,6 +289,8 @@ void    Channel::kickFromChan(int kickerFd, std::string &userToKick, std::string
         for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
             writeMessageToClient_fd(i->first, cmnt);
         }
+        std::map<int, Client>::iterator baned = this->_joinedUsers.find(userToKickFd);
+        this->_admins.insert(std::make_pair(baned->first, baned->second));
         this->_joinedUsers.erase(userToKickFd);
     } else
         ERR_CHANOPRIVSNEEDED(kickerFd, this->getChannelName());
