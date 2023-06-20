@@ -113,6 +113,7 @@ class Channel {
         std::map<int,Client>            _operators;     // Operators of a specifec channel
         std::map<int,Client>            _bannedUsers; // Banned Clients
         std::map<int,Client>            _voicedClients; // Voiced Clients under a moderated channel
+        std::map<int,Client>            _invitedClients;
         std::string                     _channel_name;
         std::string                     _channel_pass;
         std::string                     _topic;
@@ -235,20 +236,20 @@ class Server
         void removeChannel(std::string chName);
 
         /* ---- AMINE'S PART ------------------------------------------------ */
-        Channel*                        get_channel(std::string channel_name);
+        Channel*                        get_channel(size_t pfdsindex, std::string chan_name);
         std::pair<const int, Client>    &get_client(std::string nickname, Channel* channel, size_t pfdsindex);
         struct s_pmc    parse_mode_command(std::string &command, size_t pfdsindex, std::string username);
         void    set_operator(bool add, size_t pfdsindex, t_pmc &pmc, std::string username);
         void    set_voiced(bool add, size_t pfdsindex, t_pmc &pmc, std::string username);
         void    ban_client(bool add, t_pmc &pmc, size_t pfdsindex, std::string username);
-        void    set_private(bool add, t_pmc &pmc, size_t pfdsindex, std::string username);
-        void    set_secret(bool add, t_pmc &pmc, size_t pfdsindex, std::string username);
-        void    set_invite_only(bool add, t_pmc &pmc, size_t pfdsindex, std::string username);
-        void    set_only_ops_change_topic(bool add, t_pmc &pmc, size_t pfdsindex, std::string username);
-        void    set_no_outside_messages(bool add, t_pmc &pmc, size_t pfdsindex, std::string username);
-        void    set_only_voice_and_ops(bool add, t_pmc &pmc, size_t pfdsindex, std::string username);
-        void    set_client_limit(bool add, t_pmc &pmc, size_t pfdsindex, std::string cmd, std::string username);
-        void    set_key(bool add, t_pmc &pmc, size_t pfdsindex, std::string username);
+        void    set_private(bool add, t_pmc &pmc, std::string username);
+        void    set_secret(bool add, t_pmc &pmc, std::string username);
+        void    set_invite_only(bool add, t_pmc &pmc, std::string username);
+        void    set_only_ops_change_topic(bool add, t_pmc &pmc, std::string username);
+        void    set_no_outside_messages(bool add, t_pmc &pmc, std::string username);
+        void    set_only_voice_and_ops(bool add, t_pmc &pmc, std::string username);
+        void    set_client_limit(bool add, t_pmc &pmc, std::string cmd, size_t pfdsindex, std::string username);
+        void    set_key(bool add, t_pmc &pmc, std::string username, size_t pfdsindex);
         void    execute_mode_command(size_t pfdsindex, std::vector<std::string> &full_cmd);
         void    execute_invite_command(size_t pfdsindex, std::vector<std::string> &full_cmd);
         void    is_operator(Channel& channel, size_t pfdindex);

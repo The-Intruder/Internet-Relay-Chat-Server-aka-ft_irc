@@ -9,12 +9,15 @@
 
 /* -------------------------------------------------------------------------- */
 
-Channel   *Server::get_channel(std::string chan_name)
+Channel   *Server::get_channel(size_t pfdsindex, std::string chan_name)
 {
     std::map<std::string, Channel>::iterator it = ChannelsMap.find(chan_name);
 
     if (it == ChannelsMap.end())
+    {
+        ERR_NOSUCHCHANNEL(pfdsindex, chan_name);
         throw std::runtime_error("get_channel: channel not found");
+    }
     return (&(it->second));
 }
 
@@ -55,7 +58,7 @@ t_pmc  Server::parse_mode_command(std::string &command, size_t pfdsindex, \
         channel_name = command.substr(0);
     else
         channel_name = command.substr(0, pos++);
-    parsed_command.channel = get_channel(channel_name);
+    parsed_command.channel = get_channel(pfdsindex, channel_name);
     while (pos < command.length() && command[pos] == ' ')
         ++pos;
     if (pos >= command.length() || pos + 1 >= command.length() \
@@ -83,7 +86,8 @@ t_pmc  Server::parse_mode_command(std::string &command, size_t pfdsindex, \
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_operator(bool add, size_t pfdsindex, t_pmc &pmc, std::string username)
+void    Server::set_operator(bool add, size_t pfdsindex, t_pmc &pmc, \
+    std::string username)
 {
     std::pair<const int,Client> &client = get_client(pmc.parameter, \
         pmc.channel, pfdsindex);
@@ -93,13 +97,18 @@ void    Server::set_operator(bool add, size_t pfdsindex, t_pmc &pmc, std::string
     else
         pmc.channel->_operators.erase(client.first);
 
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
-        pmc.mode + " " + pmc.parameter);
+    for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
+        it != pmc.channel->_joinedUsers.end(); ++it)
+    {
+        RPL_CHANNELMODEIS(it->second.getSockfd(), pmc.channel->_channel_name, username, \
+            pmc.mode + " " + pmc.parameter);
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 
-void     Server::set_voiced(bool add, size_t pfdsindex, t_pmc &pmc, std::string username)
+void     Server::set_voiced(bool add, size_t pfdsindex, t_pmc &pmc, \
+    std::string username)
 {
     std::pair<const int,Client>   &client = get_client(pmc.parameter, \
         pmc.channel, pfdsindex);
@@ -109,14 +118,19 @@ void     Server::set_voiced(bool add, size_t pfdsindex, t_pmc &pmc, std::string 
     else
         pmc.channel->_voicedClients.erase(client.first);
 
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
-        pmc.mode + " " + pmc.parameter);
+    for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
+        it != pmc.channel->_joinedUsers.end(); ++it)
+    {
+        RPL_CHANNELMODEIS(it->second.getSockfd(), pmc.channel->_channel_name, username, \
+            pmc.mode + " " + pmc.parameter);
+    }
 }
 
 
 /* -------------------------------------------------------------------------- */
 
-void     Server::ban_client(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
+void     Server::ban_client(bool add, t_pmc &pmc, size_t pfdsindex, \
+    std::string username)
 {
     std::pair<const int,Client> &client = get_client(pmc.parameter, \
         pmc.channel, pfdsindex);
@@ -130,85 +144,122 @@ void     Server::ban_client(bool add, t_pmc &pmc, size_t pfdsindex, std::string 
     else
         pmc.channel->_bannedUsers.erase(client.first);
 
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
-        pmc.mode + " " + pmc.parameter);
+    for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
+        it != pmc.channel->_joinedUsers.end(); ++it)
+    {
+        RPL_CHANNELMODEIS(it->second.getSockfd(), pmc.channel->_channel_name, username, \
+            pmc.mode + " " + pmc.parameter);
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_private(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
+void    Server::set_private(bool add, t_pmc &pmc, std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x01;
     else
         pmc.channel->_modes &= ~0x01;
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
-        pmc.mode);
+
+    for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
+        it != pmc.channel->_joinedUsers.end(); ++it)
+    {
+        RPL_CHANNELMODEIS(it->second.getSockfd(), pmc.channel->_channel_name, username, \
+            pmc.mode);
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_secret(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
+void    Server::set_secret(bool add, t_pmc &pmc, std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x02;
     else
         pmc.channel->_modes &= ~0x02;
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
-        pmc.mode);
+    for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
+        it != pmc.channel->_joinedUsers.end(); ++it)
+    {
+        RPL_CHANNELMODEIS(it->second.getSockfd(), pmc.channel->_channel_name, username, \
+            pmc.mode);
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_invite_only(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
+void    Server::set_invite_only(bool add, t_pmc &pmc, std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x04;
     else
         pmc.channel->_modes &= ~0x04;
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+
+    for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
+        it != pmc.channel->_joinedUsers.end(); ++it)
+    {
+        RPL_CHANNELMODEIS(it->second.getSockfd(), pmc.channel->_channel_name, username, \
         pmc.mode);
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_only_ops_change_topic(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
+void    Server::set_only_ops_change_topic(bool add, t_pmc &pmc, \
+    std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x20;
     else
         pmc.channel->_modes &= ~0x20;
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
-        pmc.mode);
+
+    for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
+        it != pmc.channel->_joinedUsers.end(); ++it)
+    {
+        RPL_CHANNELMODEIS(it->second.getSockfd(), pmc.channel->_channel_name, username, \
+            pmc.mode);
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_no_outside_messages(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
+void    Server::set_no_outside_messages(bool add, t_pmc &pmc, \
+    std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x10;
     else
         pmc.channel->_modes &= ~0x10;
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
-        pmc.mode);
+
+    for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
+        it != pmc.channel->_joinedUsers.end(); ++it)
+    {
+        RPL_CHANNELMODEIS(it->second.getSockfd(), pmc.channel->_channel_name, username, \
+            pmc.mode);
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 
-void     Server::set_only_voice_and_ops(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
+void     Server::set_only_voice_and_ops(bool add, t_pmc &pmc, \
+    std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x08;
     else
         pmc.channel->_modes &= ~0x08;
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
-        pmc.mode);
+
+    for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
+        it != pmc.channel->_joinedUsers.end(); ++it)
+    {
+        RPL_CHANNELMODEIS(it->second.getSockfd(), pmc.channel->_channel_name, username, \
+            pmc.mode);
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 
-void   Server::set_client_limit(bool add, t_pmc &pmc, size_t pfdsindex, std::string cmd, std::string username)
+void   Server::set_client_limit(bool add, t_pmc &pmc, std::string cmd, \
+    size_t pfdsindex, std::string username)
 {
     if (add == true)
         pmc.channel->_modes |= 0x40;
@@ -220,13 +271,19 @@ void   Server::set_client_limit(bool add, t_pmc &pmc, size_t pfdsindex, std::str
         throw std::runtime_error("ERR_NEEDMOREPARAMS: Needs more parametres");
     }
     pmc.channel->_client_limit = std::atoi(pmc.parameter.c_str());
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
-        pmc.mode + " " + pmc.parameter);
+
+    for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
+        it != pmc.channel->_joinedUsers.end(); ++it)
+    {
+        RPL_CHANNELMODEIS(it->second.getSockfd(), pmc.channel->_channel_name, \
+            username, pmc.mode + " " + pmc.parameter);
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 
-void    Server::set_key(bool add, t_pmc &pmc, size_t pfdsindex, std::string username)
+void    Server::set_key(bool add, t_pmc &pmc, std::string username, \
+    size_t pfdsindex)
 {
     if (add == true)
     {
@@ -239,8 +296,13 @@ void    Server::set_key(bool add, t_pmc &pmc, size_t pfdsindex, std::string user
     }
     else if (pmc.parameter == pmc.channel->_key)
         pmc.channel->_key.clear();
-    RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
-        pmc.mode + " " + pmc.parameter);
+
+    for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
+        it != pmc.channel->_joinedUsers.end(); ++it)
+    {
+        RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+            pmc.mode + " " + pmc.parameter);
+    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -265,6 +327,8 @@ void    Server::is_operator(Channel& channel, size_t pfdsindex)
 }
 
 /* -------------------------------------------------------------------------- */
+
+//FIXME:mode operation should be broadcast to everone in the channel
 
 void    Server::execute_mode_command(size_t pfdsindex, \
     std::vector<std::string> &full_cmd)
@@ -292,21 +356,21 @@ void    Server::execute_mode_command(size_t pfdsindex, \
         else if (pmc.mode[1] == 'b')
             ban_client(add, pmc, pfdsindex, username);
         else if (pmc.mode[1] == 'p')
-            set_private(add, pmc, pfdsindex, username);
+            set_private(add, pmc, username);
         else if (pmc.mode[1] == 's')
-            set_secret(add, pmc, pfdsindex, username);
+            set_secret(add, pmc, username);
         else if (pmc.mode[1] == 'i')
-            set_invite_only(add, pmc, pfdsindex, username);
+            set_invite_only(add, pmc, username);
         else if (pmc.mode[1] == 't')
-            set_only_ops_change_topic(add, pmc, pfdsindex, username);
+            set_only_ops_change_topic(add, pmc, username);
         else if (pmc.mode[1] == 'n')
-            set_no_outside_messages(add, pmc, pfdsindex, username);
+            set_no_outside_messages(add, pmc, username);
         else if (pmc.mode[1] == 'm')
-            set_only_voice_and_ops(add, pmc, pfdsindex, username);
+            set_only_voice_and_ops(add, pmc, username);
         else if (pmc.mode[1] == 'l')
-            set_client_limit(add, pmc, pfdsindex, full_cmd[0], username);
+            set_client_limit(add, pmc, full_cmd[0], pfdsindex, username);
         else if (pmc.mode[1] == 'k')
-            set_key(add, pmc, pfdsindex, username);
+            set_key(add, pmc, username, pfdsindex);
         else
         {
             ERR_UNKNOWNMODE(pfdsindex, pmc.mode, pmc.channel->_channel_name)
@@ -320,3 +384,11 @@ void    Server::execute_mode_command(size_t pfdsindex, \
     
 }
 
+// FIXME: message gets sent to the wrong client
+// FIXED: mode reply message should get broadcasted to all the clients
+// FIXED: invite should put clients in an invite list
+// FIXED: invalid channel doesn't output an error msg
+
+// FIXME: PRIVMSG doesn't send msg to public channel
+// FIXME: JOIN doesn't check for a key in the channel
+// FIXME: JOIN needs to join client if its on the invite list

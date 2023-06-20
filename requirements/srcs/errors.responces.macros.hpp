@@ -98,7 +98,7 @@
 # define ERR_USERNOTINCHANNEL(pfdsindex, nick, chName) {std::string message = ":IrcTheThreeMusketeers 441 " + nick + " " + chName + " :They aren't on that channel\n"; writeMessageToClient(pfdsindex, message);}
 # define ERR_UNKNOWNMODE(pfdsindex, theChar, chName) {std::string message = ":IrcTheThreeMusketeers 472 " + theChar + " :is unknown mode char to me for " + chName + "\n"; writeMessageToClient(pfdsindex, message);}
 
-# define RPL_CHANNELMODEIS(pfdsindex, chName, mode, modeParams) {std::string message = ":IrcTheThreeMusketeers 324 " + chName + " " + mode + " " + modeParams + "\n"; writeMessageToClient(pfdsindex, message);}
+# define RPL_CHANNELMODEIS(pfdsindex, chName, mode, modeParams) {std::string message = ":IrcTheThreeMusketeers 324 " + chName + " " + mode + " " + modeParams + "\n"; writeMessageToClient_fd(pfdsindex, message);}
 
 # define ERR_NOCHANMODES(pfdsindex, chName) {std::string message = ":IrcTheThreeMusketeers 477 " + chName + " :Channel doesn't support modes\n"; writeMessageToClient(pfdsindex, message);}
 

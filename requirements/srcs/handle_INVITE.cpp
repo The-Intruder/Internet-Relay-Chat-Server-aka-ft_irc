@@ -61,7 +61,7 @@ t_pic  Server::parse_invite_command(std::string &command, size_t pfdsindex)
         channel_name = command.substr(pos, command.length() - pos);
     else
         channel_name = command.substr(pos + 1, pos2 - (pos + 1));
-    parsed_command.channel = get_channel(channel_name);
+    parsed_command.channel = get_channel(pfdsindex, channel_name);
     return (parsed_command);
 }
 
@@ -120,7 +120,7 @@ void    Server::execute_invite_command(size_t pfdsindex, \
             throw std::runtime_error(" ");
         }
         it = ClientsMap.find(pic.clients_fd);
-        pic.channel->_joinedUsers.insert(std::make_pair(it->first, it->second));
+        pic.channel->_invitedClients.insert(std::make_pair(it->first, it->second));
     }
     catch(const std::exception& e)
     {
