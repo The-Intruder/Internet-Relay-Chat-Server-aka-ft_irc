@@ -149,8 +149,9 @@ class Channel {
         void        joinChannel(Client &client, std::string &chPass, int fd);
         void        notifyUsers(int fd);
         void        welcomeUser(int fd);
-        void        PRIVMSG_messagToChannel(int fd, std::string &msg);
-        void        NOTICE_messagToChannel(int fd, std::string &msg);
+        void        msgToChan(int fd, std::string &msg);
+        void        PRIVMSG_messagToChannel(int fd, Client &client, std::string &msg);
+        void        NOTICE_messagToChannel(int fd, Client &client, std::string &msg);
         void        leftChannel(int fd, std::string &msg);
         void        sayGoodby(int fd, std::string &msg);
         void        kickFromChan(int kickerFd, std::string &userToKick, std::string &comment);

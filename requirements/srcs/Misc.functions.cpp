@@ -33,7 +33,7 @@ void    writeMessageToClient_fd(int fd, std::string message)
 void Server::removeChannel(std::string chName){
     std::map<std::string, Channel>::iterator channelIt = \
     this->ChannelsMap.find(chName);
-    if(channelIt != this->ChannelsMap.end() && channelIt->second.empty()){
+    if(channelIt != this->ChannelsMap.end() && !channelIt->second.empty()){
         this->ChannelsMap.erase(channelIt);
     }
 }

@@ -42,7 +42,7 @@ void    Server::PRIVMSG_handdleMSG(std::size_t pfdsindex, std::vector<std::vecto
         if (it->at(0) == '#'){
             std::map<std::string, Channel>::iterator chanl = this->ChannelsMap.find(*it);
             if (chanl != this->ChannelsMap.end())
-                chanl->second.PRIVMSG_messagToChannel(this->pfds[pfdsindex].fd, msg);
+                chanl->second.PRIVMSG_messagToChannel(this->pfds[pfdsindex].fd, this->ClientsMap.find(this->pfds[pfdsindex].fd)->second, msg);
             else
                 ERR_NOSUCHNICK(pfdsindex, *it);
         } else {

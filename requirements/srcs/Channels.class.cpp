@@ -38,6 +38,10 @@ Channel::Channel(Channel const &src){
     _modes = src._modes;
     _key = src._key;
     _HostName = src._HostName;
+    _bannedUsers = src._bannedUsers;
+    _voicedClients = src._voicedClients;
+    _invitedClients = src._invitedClients;
+
 } 
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
@@ -53,6 +57,9 @@ const Channel &Channel::operator=(Channel const &src){
         _modes = src._modes;
         _key = src._key;
         _HostName = src._HostName;
+        _bannedUsers = src._bannedUsers;
+        _voicedClients = src._voicedClients;
+        _invitedClients = src._invitedClients;
     }
     return *this;
 }
@@ -185,9 +192,9 @@ void Channel::welcomeUser(int fd){
 void    Channel::joinChannel(Client &client, std::string &chPass, int fd){
     if (this->getChannelPass() != chPass){
         ERR_BADCHANNELKEY(fd, this->getChannelName());
-    } else if (this->isInviteOnly() || this->isPrivate()){
+    } else if (this->isInviteOnly() && (this->_invitedClients.find(fd) == this->_invitedClients.end())){
         ERR_INVITEONLYCHAN(fd, this->getChannelName());
-    } else if (this->_admins.find(fd) != this->_admins.end()){
+    } else if (this->_bannedUsers.find(fd) != this->_bannedUsers.end()){
         ERR_BANNEDFROMCHAN(fd, this->getChannelName());
     }else if (this->_joinedUsers.size() >= this->getClientLimit()){
         ERR_CHANNELISFULL(fd, this->getChannelName());
@@ -204,40 +211,58 @@ void    Channel::joinChannel(Client &client, std::string &chPass, int fd){
 void    Channel::addAdmin(int fd){
     this->_admins.insert(std::make_pair(fd, this->_joinedUsers.find(fd)->second));
 }
-
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
-void    Channel::PRIVMSG_messagToChannel(int fd, std::string &msg){
-    std::map<int, Client>::iterator client = this->_joinedUsers.find(fd);
-    if (client != this->_joinedUsers.end() && this->_bannedUsers.find(fd) == this->_bannedUsers.end()){
-        if (!this->isOnlyVoiceAndOps() || (this->isOnlyVoiceAndOps() && this->_admins.find(fd) != this->_admins.end())){
-            std::string fullMsg = ":" + client->second.getNICKNAME() \
-            + "!" + client->second.getUSERNAME() + "@" +  this->_HostName + " PRIVMSG " \
-            + this->getChannelName() + " :" + msg + "\r\n";
-
-            for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
-                if (i->first != fd)
-                    writeMessageToClient_fd(i->first, fullMsg);
-            }
-        } else
-            ERR_CANNOTSENDTOCHAN(fd, this->getChannelName());
-    } else
-        ERR_CANNOTSENDTOCHAN(fd, this->getChannelName());
+void    Channel::msgToChan(int fd, std::string &msg){
+    for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
+        if (i->first != fd)
+            writeMessageToClient_fd(i->first, msg);
+    }
 }
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
-void    Channel::NOTICE_messagToChannel(int fd, std::string &msg){
-    std::map<int, Client>::iterator client = this->_joinedUsers.find(fd);
-    if (client != this->_joinedUsers.end() && this->_bannedUsers.find(fd) == this->_bannedUsers.end()){
-        if (!this->isOnlyVoiceAndOps() || (this->isOnlyVoiceAndOps() && this->_admins.find(fd) != this->_admins.end())){
-            std::string fullMsg = ":" + client->second.getNICKNAME() \
-            + "!" + client->second.getUSERNAME() + "@" +  this->_HostName + " PRIVMSG " \
-            + this->getChannelName() + " :" + msg + "\r\n";
 
-            for(std::map<int, Client>::iterator i = this->_joinedUsers.begin(); i != this->_joinedUsers.end();i++){
-                if (i->first != fd)
-                    writeMessageToClient_fd(i->first, fullMsg);
-            }
+void    Channel::PRIVMSG_messagToChannel(int fd, Client &client, std::string &msg){
+
+    std::string fullMsg = ":" + client.getNICKNAME() \
+    + "!" + client.getUSERNAME() + "@" +  this->_HostName + " PRIVMSG " \
+    + this->getChannelName() + " :" + msg + "\r\n";
+
+    if (this->isNoOutsideMessages()){
+        if(this->_joinedUsers.find(fd) != this->_joinedUsers.end()){
+            if(this->isOnlyVoiceAndOps()){
+                if((this->_admins.find(fd) != this->_admins.end()) || \
+                    (this->_voicedClients.find(fd) != this->_voicedClients.end())){
+                    this->msgToChan(fd, fullMsg);
+                }else
+                    ERR_CANNOTSENDTOCHAN(fd, this->getChannelName());
+            }else
+                this->msgToChan(fd, fullMsg);
+        }else
+            ERR_CANNOTSENDTOCHAN(fd, this->getChannelName());
+    } else{
+        this->msgToChan(fd, fullMsg);
+    }
+}
+/* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+void    Channel::NOTICE_messagToChannel(int fd, Client &client, std::string &msg){
+
+    std::string fullMsg = ":" + client.getNICKNAME() \
+    + "!" + client.getUSERNAME() + "@" +  this->_HostName + " NOTICE " \
+    + this->getChannelName() + " :" + msg + "\r\n";
+
+    if (this->isNoOutsideMessages()){
+        if(this->_joinedUsers.find(fd) != this->_joinedUsers.end()){
+            if(this->isOnlyVoiceAndOps()){
+                if((this->_admins.find(fd) != this->_admins.end()) || \
+                    (this->_voicedClients.find(fd) != this->_voicedClients.end())){
+                    this->msgToChan(fd, fullMsg);
+                }
+            }else
+                this->msgToChan(fd, fullMsg);
         }
+    } else{
+        this->msgToChan(fd, fullMsg);
     }
 }
 
@@ -293,7 +318,7 @@ void    Channel::kickFromChan(int kickerFd, std::string &userToKick, std::string
             writeMessageToClient_fd(i->first, cmnt);
         }
         std::map<int, Client>::iterator baned = this->_joinedUsers.find(userToKickFd);
-        this->_admins.insert(std::make_pair(baned->first, baned->second));
+        this->_bannedUsers.insert(std::make_pair(baned->first, baned->second));
         this->_joinedUsers.erase(userToKickFd);
     } else
         ERR_CHANOPRIVSNEEDED(kickerFd, this->getChannelName());

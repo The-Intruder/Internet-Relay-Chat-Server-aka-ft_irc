@@ -39,7 +39,7 @@ void    Server::NOTICE_handdleMSG(std::size_t pfdsindex, std::vector<std::vector
         if (it->at(0) == '#'){
             std::map<std::string, Channel>::iterator chanl = this->ChannelsMap.find(*it);
             if (chanl != this->ChannelsMap.end())
-                chanl->second.NOTICE_messagToChannel(this->pfds[pfdsindex].fd, msg);
+                chanl->second.NOTICE_messagToChannel(this->pfds[pfdsindex].fd, this->ClientsMap.find(this->pfds[pfdsindex].fd)->second, msg);
         } else {
             this->NOTICE_messagToClient(pfdsindex, *it, msg);
         }

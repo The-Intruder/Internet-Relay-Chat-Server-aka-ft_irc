@@ -301,7 +301,7 @@ void Server::getDateTime()
 
 void Server::executecommand(size_t pfdsindex)
 {
-    if(MS[0] == "BOT" || MS[0] == "bot")                // bot
+    if(MS[0] == "BOT" || MS[0] == "bot") // bot
         bot(pfdsindex);
     else if(MS[0] == "NICK" || MS[0] == "nick") // nick 
         nick(pfdsindex);
