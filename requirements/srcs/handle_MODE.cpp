@@ -93,9 +93,9 @@ void    Server::set_operator(bool add, size_t pfdsindex, t_pmc &pmc, \
         pmc.channel, pfdsindex);
 
     if (add == true)
-        pmc.channel->_operators.insert(client);
+        pmc.channel->_admins.insert(client);
     else
-        pmc.channel->_operators.erase(client.first);
+        pmc.channel->_admins.erase(client.first);
 
     for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
         it != pmc.channel->_joinedUsers.end(); ++it)
@@ -137,7 +137,7 @@ void     Server::ban_client(bool add, t_pmc &pmc, size_t pfdsindex, \
 
     if (add == true)
     {
-        pmc.channel->_operators.erase(client.first);
+        pmc.channel->_admins.erase(client.first);
         pmc.channel->_voicedClients.erase(client.first);
         pmc.channel->_bannedUsers.insert(client);
     }
@@ -287,15 +287,16 @@ void    Server::set_key(bool add, t_pmc &pmc, std::string username, \
 {
     if (add == true)
     {
-        if (pmc.channel->_key.empty() == false)
+        if (pmc.channel->_channel_pass.empty() == false)
         {
             ERR_KEYSET(pfdsindex, pmc.channel->_channel_name)
             throw std::runtime_error("ERR_KEYSET: Key already set");
         }
-        pmc.channel->_key = pmc.parameter;
+        pmc.channel->_channel_pass = pmc.parameter;
     }
-    else if (pmc.parameter == pmc.channel->_key)
-        pmc.channel->_key.clear();
+    else if (pmc.parameter == pmc.channel->_channel_pass)
+        pmc.channel->_channel_pass.clear();
+    std::cout << "KEY: " << pmc.channel->_channel_pass << std::endl;
 
     for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
         it != pmc.channel->_joinedUsers.end(); ++it)
@@ -316,10 +317,9 @@ void    Server::is_operator(Channel& channel, size_t pfdsindex)
         ERR_NOTONCHANNEL(pfdsindex, channel._channel_name)
         throw std::runtime_error("ERR_NOTONCHANNEL: Not on the channel");
     }
-    std::map<int,Client>::iterator it2 = channel._operators.find(pfds[pfdsindex].fd);
-    std::map<int,Client>::iterator it3 = channel._admins.find(pfds[pfdsindex].fd);
+    std::map<int,Client>::iterator it2 = channel._admins.find(pfds[pfdsindex].fd);
 
-    if (it2 == channel._operators.end() && it3 == channel._admins.end())
+    if (it2 == channel._admins.end())
     {
         ERR_CHANOPRIVSNEEDED(pfdsindex, channel._channel_name);
         throw std::runtime_error("ERR_CHANOPRIVSNEEDED: Not an operator");
@@ -327,8 +327,6 @@ void    Server::is_operator(Channel& channel, size_t pfdsindex)
 }
 
 /* -------------------------------------------------------------------------- */
-
-//FIXME:mode operation should be broadcast to everone in the channel
 
 void    Server::execute_mode_command(size_t pfdsindex, \
     std::vector<std::string> &full_cmd)
@@ -390,5 +388,4 @@ void    Server::execute_mode_command(size_t pfdsindex, \
 // FIXED: invalid channel doesn't output an error msg
 
 // FIXME: PRIVMSG doesn't send msg to public channel
-// FIXME: JOIN doesn't check for a key in the channel
 // FIXME: JOIN needs to join client if its on the invite list

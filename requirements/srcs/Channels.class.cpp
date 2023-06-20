@@ -22,6 +22,7 @@ Channel::Channel(std::string channelName, std::string channelPass){
     this->_client_limit = 50;
     this->_modes = 0;
     this->_topic = "";
+    this->_key = "";
     this->_HostName= "";
 }
 
@@ -35,6 +36,7 @@ Channel::Channel(Channel const &src){
     _topic = src._topic;
     _client_limit = src._client_limit;
     _modes = src._modes;
+    _key = src._key;
     _HostName = src._HostName;
 } 
 
@@ -49,6 +51,7 @@ const Channel &Channel::operator=(Channel const &src){
         _topic = src._topic;
         _client_limit = src._client_limit;
         _modes = src._modes;
+        _key = src._key;
         _HostName = src._HostName;
     }
     return *this;

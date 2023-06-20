@@ -110,7 +110,6 @@ class Channel {
     public:
         std::map<int,Client>            _joinedUsers; // Clients that joined specifec channel
         std::map<int,Client>            _admins;        // Admins of a specifec channel
-        std::map<int,Client>            _operators;     // Operators of a specifec channel
         std::map<int,Client>            _bannedUsers; // Banned Clients
         std::map<int,Client>            _voicedClients; // Voiced Clients under a moderated channel
         std::map<int,Client>            _invitedClients;
