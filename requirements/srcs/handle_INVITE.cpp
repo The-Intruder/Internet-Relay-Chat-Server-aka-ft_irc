@@ -121,7 +121,11 @@ void    Server::execute_invite_command(size_t pfdsindex, \
         }
         it = ClientsMap.find(pic.clients_fd);
         pic.channel->_invitedClients.insert(std::make_pair(it->first, it->second));
+        writeMessageToClient_fd(it->second.getSockfd(), ":" + it->second.getNICKNAME() \
+            + "!" + it->second.getUSERNAME() + "@" + Hostname + " INVITE " + \
+            it->second.getNICKNAME() + " " + pic.channel->_channel_name + "\r\n");
     }
+    
     catch(const std::exception& e)
     {
         // std::cerr << e.what() << std::endl;
