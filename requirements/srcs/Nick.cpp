@@ -36,7 +36,6 @@ void Server::nick(size_t pfdsindex)
             }
             if(it != ClientsMap.end())
             {
-                std::cout << "\ndebug1\n" << std::endl;
                 ERR_NICKNAMEINUSE(pfdsindex, MS[1]);
                 return;
             }
