@@ -65,7 +65,7 @@ t_pmc  Server::parse_mode_command(std::string &command, size_t pfdsindex, \
         || (command[pos] != '+' && command[pos] != '-') \
         || !std::isalpha(command[pos + 1]))
     {
-        RPL_CHANNELMODEIS(pfdsindex, channel_name, username, "+-ovbpsitnmlk");
+        RPL_CHANNELMODEIS(pfds[pfdsindex].fd, channel_name, username, "+-ovbpsitnmlk");
         throw std::runtime_error("ERR_NEEDMOREPARAMS: Needs more parametres");
     }
     parsed_command.mode = command.substr(pos, 2);
@@ -301,7 +301,7 @@ void    Server::set_key(bool add, t_pmc &pmc, std::string username, \
     for (std::map<int, Client>::iterator it = pmc.channel->_joinedUsers.begin(); \
         it != pmc.channel->_joinedUsers.end(); ++it)
     {
-        RPL_CHANNELMODEIS(pfdsindex, pmc.channel->_channel_name, username, \
+        RPL_CHANNELMODEIS(it->second.getSockfd(), pmc.channel->_channel_name, username, \
             pmc.mode + " " + pmc.parameter);
     }
 }
@@ -314,14 +314,14 @@ void    Server::is_operator(Channel& channel, size_t pfdsindex)
 
     if (it1 == channel._joinedUsers.end())
     {
-        ERR_NOTONCHANNEL(pfdsindex, channel._channel_name)
+        ERR_NOTONCHANNEL(pfds[pfdsindex].fd, channel._channel_name)
         throw std::runtime_error("ERR_NOTONCHANNEL: Not on the channel");
     }
     std::map<int,Client>::iterator it2 = channel._admins.find(pfds[pfdsindex].fd);
 
     if (it2 == channel._admins.end())
     {
-        ERR_CHANOPRIVSNEEDED(pfdsindex, channel._channel_name);
+        ERR_CHANOPRIVSNEEDED(pfds[pfdsindex].fd, channel._channel_name);
         throw std::runtime_error("ERR_CHANOPRIVSNEEDED: Not an operator");
     }
 }
@@ -382,7 +382,7 @@ void    Server::execute_mode_command(size_t pfdsindex, \
     
 }
 
-// FIXME: message gets sent to the wrong client
+// FIXED: message gets sent to the wrong client
 // FIXED: mode reply message should get broadcasted to all the clients
 // FIXED: invite should put clients in an invite list
 // FIXED: invalid channel doesn't output an error msg
