@@ -77,8 +77,9 @@ void    Server::PART_trigger(std::size_t pfdsindex, std::vector<std::vector<std:
         if(channel != this->ChannelsMap.end()){
             channel->second.leftChannel(this->pfds[pfdsindex].fd, msg);
             this->removeChannel(channel->second.getChannelName());
-        }else
+        }else{
             ERR_NOSUCHCHANNEL(pfdsindex, *it);
+        }
     }
 }
 

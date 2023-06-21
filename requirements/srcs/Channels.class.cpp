@@ -287,6 +287,12 @@ void    Channel::leftChannel(int fd, std::string &msg){
         std::map<int, Client>::iterator adminIt = this->_admins.find(fd);
         if (adminIt != this->_admins.end())
             this->_admins.erase(adminIt);
+        std::map<int, Client>::iterator voicedIt = this->_voicedClients.find(fd);
+        if (voicedIt != this->_voicedClients.end())
+            this->_voicedClients.erase(voicedIt);
+        std::map<int, Client>::iterator invitedIt = this->_invitedClients.find(fd);
+        if (invitedIt != this->_invitedClients.end())
+            this->_invitedClients.erase(invitedIt);
     } else{
         ERR_NOTONCHANNEL(fd, this->getChannelName());
     }
