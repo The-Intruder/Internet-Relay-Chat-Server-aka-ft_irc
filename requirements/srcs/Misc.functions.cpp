@@ -40,17 +40,18 @@ void Server::removeChannel(std::string chName){
 
 /* -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 void    Server::removeClientFromChans(int fd){
-    if (!this->ChannelsMap.empty()){
-        std::map<std::string, Channel>::iterator chan = this->ChannelsMap.begin();
-        for(; chan != this->ChannelsMap.end(); chan++){ // Fix abort
-            if (chan->second.isClientOnChan(fd)){
-                chan->second.removeUser(fd);
-                if (chan->second.empty()){
-                    removeChannel(chan->second.getChannelName());
-                }
+
+    std::map<std::string, Channel>::iterator chan = this->ChannelsMap.begin();
+    for(; chan != this->ChannelsMap.end(); chan++){
+        if (chan->second.isClientOnChan(fd)){
+            chan->second.removeUser(fd);
+            if (chan->second.empty()){
+                removeChannel(chan->second.getChannelName());
             }
+            break;
         }
     }
+
 }
 
 /* -------------------------------------------------------------------------- */
