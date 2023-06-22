@@ -17,56 +17,72 @@ ${GRN}
      #+#             #+#                     #+#       #+#    #+#   #+#    #+#    
     ###             ###     ##########  ###########   ###    ###    ########      
 ${NNN}${GRA}
-                                - Created By : ${RED}Mohamed Amine /\\ Hssain /\\ Abdellah${NNN}\n
+                        - Created By : ${RED}Mohamed Amine ${BLU}/\\ \
+							${RED}Hssain ${BLU}/\\ ${RED}Abdellah${NNN}\n
 endef
 export TITLE
 
 # ---------------------------------- Variables ------------------------------- #
 
 CC			:= c++
-CC_FLAGS	:= -Wall -Wextra -Werror -std=c++98
+CC_FLAGS	:= -Wall -Wextra -Werror -std=c++98  -fsanitize=address -static-libsan -g
 
-NAME		:= ft_irc
-MAIN		:= ft_irc.main.cpp
-HEADER		:= ft_irc.head.hpp
+NAME		:= ircserv
+MAIN		:= requirements/ircserv.main.cpp
+HEADER		:= requirements/ircserv.head.hpp
 
 SRCS_DIR := requirements/srcs/
-SRCS_LST := 
+
+SRCS_LST := Server.class.cpp \
+			Clients.class.cpp \
+			Channels.class.cpp \
+			handdle_JOIN.cpp \
+			Bot.cpp \
+			Misc.functions.cpp \
+			PRIVMSG_NOTICE_utils.cpp \
+			handdle_PRIVMSG.cpp \
+			handdle_NOTICE.cpp \
+			handdle_PART.cpp \
+			handdle_KICK.cpp \
+			handdle_TOPIC.cpp \
+			Quit.cpp \
+			Nick.cpp \
+			handle_MODE.cpp \
+			handle_INVITE.cpp
+
+
 SRCS := ${addprefix ${SRCS_DIR}, ${SRCS_LST}}
 
 OBJS_DIR := requirements/objs/
-OBJS_LST := ${patsubst %.c, %.o, ${SRCS_LST}}
+OBJS_LST := ${patsubst %.cpp, %.obj, ${SRCS_LST}}
 OBJS := ${addprefix ${OBJS_DIR}, ${OBJS_LST}}
 
 # ---------------------------------- Rules ----------------------------------- #
 
-.PHONY: all clean fclean re title
+all: title ${NAME}
 
-all: title
+${NAME}: ${OBJS_DIR} ${OBJS} ${HEADER} ${MAIN} 
+	@${CC} ${CC_FLAGS} ${MAIN} ${OBJS} -o ${NAME}
+	@echo "${GRN}Compiled [${NAME}] Successfully!${NNN}"
 
-${NAME}: ${OBJS_DIR} ${OBJS} ${HEADER}
-    @${CC} ${CC_FLAGS} ${MAIN} ${OBJS} -o ${NAME}
-    @echo "${GRN}Compiled [${NAME}] Successfully!${NNN}"
-
-${OBJS_DIR}%.o: ${SRCS_DIR}%.c ${HEADER}
-    @${CC} ${CC_FLAGS} -c $< -o $@
-    @echo "${BLU}Compiled $< Successfully!${NNN}"
+${OBJS_DIR}%.obj: ${SRCS_DIR}%.cpp ${HEADER}
+	@${CC} ${CC_FLAGS} -c $< -o $@
+	@echo "${BLU}Compiled $< Successfully!${NNN}"
 
 ${OBJS_DIR}:
-    @mkdir ${OBJS_DIR}
-    @mkdir ${OBJS_DIR}${UTLS_DIR}
-    @echo "${BLU}Created [${OBJS_DIR}] Successfully!${NNN}"
-
+	@mkdir ${OBJS_DIR}
 clean:
-    @rm -rf ${OBJS_DIR}
-    @echo "${RED}Removed [${OBJS_DIR}] Successfully!${NNN}"
+	@rm -rf ${OBJS_DIR}
+	@echo "${RED}Removed [${OBJS_DIR}] Successfully!${NNN}"
 
 fclean: clean
-    @rm -f ${NAME}
-    @echo "${RED}Removed [${NAME}] Successfully!${NNN}"
+	@rm -f ${NAME}
+	@echo "${RED}Removed [${NAME}] Successfully!${NNN}"
 
 re: fclean all
 
+.PHONY: all clean fclean re title
+
 title:
-    @clear
-    @echo "$$TITLE"
+	@clear
+	@echo "$$TITLE"

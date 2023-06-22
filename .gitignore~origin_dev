@@ -37,4 +37,5 @@
 README.md
 ft_irc
 .gitignore
+*.dSYM
 ircserv.dSYM
