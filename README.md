@@ -1,7 +1,4 @@
 # ft_irc - Internet Relay Chat Server
-
-![IRC Logo]()
-
 **ft_irc** is a C++98 implementation of an Internet Relay Chat (IRC) server. The project aims to create a fully functional IRC server that allows users to connect, exchange real-time messages, join group channels, and perform various IRC operations.
 
 ## Table of Contents
