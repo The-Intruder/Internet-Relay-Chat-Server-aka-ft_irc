@@ -52,14 +52,3 @@ The bonus part includes additional features that can be added to the IRC server 
 - File Transfer: Implement file transfer functionality.
 - Bot: Add a bot to the IRC server.
 
-## Submission and Peer-Evaluation
-
-Submit your assignment in your Git repository. Only the work inside your repository will be evaluated during the defense. Make sure to double-check the names of your files before submission.
-
-You are encouraged to create test programs for your project, even though they won't be submitted or graded. These tests can be useful for testing your server during the defense or evaluating other ft_irc projects in the future. You are free to use any necessary tests during the evaluation process.
-
-During the evaluation, your reference client will be used to test the functionality of your IRC server.
-
-For more details, refer to the original project subject document.
-
-**Good luck with your ft_irc project!**
